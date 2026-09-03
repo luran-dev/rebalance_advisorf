@@ -1,0 +1,38 @@
+[
+  {
+    "suffix": "desktop",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "accountValue": "종합계좌",
+    "instrumentName": "TIGER 미국배당다우존스",
+    "assetClass": "다우존스",
+    "sumAfterDraft": "93.5%",
+    "duplicateFeedback": true,
+    "duplicateDisabled": true,
+    "unregisteredFeedback": true,
+    "unregisteredDisabled": true,
+    "sumWhileEditing": "95.0%",
+    "overflowX": false,
+    "consoleErrors": []
+  },
+  {
+    "suffix": "mobile",
+    "viewport": {
+      "width": 375,
+      "height": 900
+    },
+    "accountValue": "종합계좌",
+    "instrumentName": "TIGER 미국배당다우존스",
+    "assetClass": "다우존스",
+    "sumAfterDraft": "93.5%",
+    "duplicateFeedback": true,
+    "duplicateDisabled": true,
+    "unregisteredFeedback": true,
+    "unregisteredDisabled": true,
+    "sumWhileEditing": "95.0%",
+    "overflowX": false,
+    "consoleErrors": []
+  }
+]

@@ -1,0 +1,28 @@
+[
+  {
+    "suffix": "desktop",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "firstCountText": "16개 종목",
+    "finalCountText": "16개 종목",
+    "duplicateFeedback": true,
+    "addDisabledOnDuplicate": true,
+    "overflowX": false,
+    "consoleErrors": []
+  },
+  {
+    "suffix": "mobile",
+    "viewport": {
+      "width": 375,
+      "height": 900
+    },
+    "firstCountText": "16개 종목",
+    "finalCountText": "16개 종목",
+    "duplicateFeedback": true,
+    "addDisabledOnDuplicate": true,
+    "overflowX": false,
+    "consoleErrors": []
+  }
+]

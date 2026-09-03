@@ -1,8 +1,8 @@
-import { BarChart3, CircleDollarSign, Settings } from "lucide-react";
+import { BarChart3, Boxes, CircleDollarSign, Settings } from "lucide-react";
 import type { Account, AccountId } from "../types";
 
 export type PortfolioView = AccountId | "all";
-export type AppView = PortfolioView | "accounts";
+export type AppView = PortfolioView | "accounts" | "instruments";
 
 export function AppShellNav({
   accounts,
@@ -56,6 +56,15 @@ export function AppShellNav({
         >
           <Settings size={18} aria-hidden="true" />
           계좌 관리
+        </button>
+        <button
+          aria-pressed={activeView === "instruments"}
+          className={activeView === "instruments" ? "nav-item active" : "nav-item"}
+          onClick={() => onViewChange("instruments")}
+          type="button"
+        >
+          <Boxes size={18} aria-hidden="true" />
+          종목 관리
         </button>
       </nav>
     </aside>

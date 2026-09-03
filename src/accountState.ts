@@ -1,7 +1,8 @@
-import type { Account, AccountDraft, AccountId, CashPosition, Holding, TargetAsset } from "./types";
+import type { Account, AccountDraft, AccountId, CashPosition, Holding, Instrument, TargetAsset } from "./types";
 
 export type PortfolioState = {
   readonly accounts: readonly Account[];
+  readonly instruments: readonly Instrument[];
   readonly targets: readonly TargetAsset[];
   readonly holdings: readonly Holding[];
   readonly cashPositions: readonly CashPosition[];
@@ -36,6 +37,7 @@ export const updateAccount = (state: PortfolioState, accountId: AccountId, draft
 });
 
 export const deleteAccount = (state: PortfolioState, accountId: AccountId): PortfolioState => ({
+  instruments: state.instruments,
   accounts: state.accounts.filter((account) => account.id !== accountId),
   targets: state.targets.filter((target) => target.accountId !== accountId),
   holdings: state.holdings.filter((holding) => holding.accountId !== accountId),

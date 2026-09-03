@@ -1,0 +1,21 @@
+{
+  "portfolioHasInstrumentManager": 0,
+  "categoryOptions": [
+    "개별주식",
+    "S&P500",
+    "나스닥100",
+    "다우존스",
+    "채권",
+    "금",
+    "금리",
+    "해외개별주식",
+    "해외 ETF",
+    "국내 ETF",
+    "현금",
+    "리츠"
+  ],
+  "currencyOptions": [
+    "KRW",
+    "USD"
+  ]
+}

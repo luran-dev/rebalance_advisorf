@@ -4,6 +4,27 @@ export type SymbolCode = string;
 export type Currency = "KRW" | "USD";
 export type TradeDirection = "buy" | "sell" | "hold";
 
+export const suitabilityOptions = ["IRP", "연금저축", "IRP/연금저축", "ISA", "일반"] as const;
+
+export type Suitability = (typeof suitabilityOptions)[number];
+
+export const instrumentCategories = [
+  "개별주식",
+  "S&P500",
+  "나스닥100",
+  "다우존스",
+  "채권",
+  "금",
+  "금리",
+  "해외개별주식",
+  "해외 ETF",
+  "국내 ETF",
+  "현금",
+  "리츠",
+] as const;
+
+export type InstrumentCategory = (typeof instrumentCategories)[number];
+
 export type Account = {
   readonly id: AccountId;
   readonly name: string;
@@ -15,13 +36,39 @@ export type AccountDraft = {
   readonly broker: string;
 };
 
+export type Instrument = {
+  readonly name: string;
+  readonly symbol: SymbolCode;
+  readonly currency: Currency;
+  readonly category: InstrumentCategory;
+};
+
+export type InstrumentDraft = {
+  readonly name: string;
+  readonly symbol: string;
+  readonly currency: Currency;
+  readonly category: InstrumentCategory;
+};
+
 export type TargetAsset = {
   readonly accountId: AccountId;
   readonly assetClass: string;
   readonly symbol: SymbolCode;
   readonly productName: string;
-  readonly suitability: string;
+  readonly suitability: Suitability;
   readonly targetPercent: number;
+};
+
+export type TargetAllocationDraft = {
+  readonly accountId: AccountId;
+  readonly symbol: SymbolCode;
+  readonly suitability: Suitability;
+  readonly targetPercent: number;
+};
+
+export type TargetAllocationKey = {
+  readonly accountId: AccountId;
+  readonly symbol: SymbolCode;
 };
 
 export type Holding = {
@@ -29,7 +76,7 @@ export type Holding = {
   readonly assetClass: string;
   readonly symbol: SymbolCode;
   readonly productName: string;
-  readonly suitability: string;
+  readonly suitability: Suitability | "-";
   readonly currency: Currency;
   readonly currentPrice: number;
   readonly quantity: number;

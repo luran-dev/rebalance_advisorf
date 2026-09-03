@@ -1,9 +1,28 @@
-import type { Account, CashPosition, Holding, TargetAsset } from "./types";
+import type { Account, CashPosition, Holding, Instrument, TargetAsset } from "./types";
 
 export const accounts: readonly Account[] = [
   { id: "pension-future", name: "연금 저축 펀드", broker: "미래" },
   { id: "irp-future", name: "IRP", broker: "미래" },
   { id: "global-shinhan", name: "종합계좌", broker: "신한-469" },
+];
+
+export const instruments: readonly Instrument[] = [
+  { name: "KODEX 미국 S&P500 TR", symbol: "379800", currency: "KRW", category: "S&P500" },
+  { name: "KODEX 미국나스닥100 TR", symbol: "379810", currency: "KRW", category: "나스닥100" },
+  { name: "ACE 미국30년 국채액티브(H)", symbol: "453850", currency: "KRW", category: "채권" },
+  { name: "ACE 구글밸류체인액티브", symbol: "483340", currency: "KRW", category: "국내 ETF" },
+  { name: "TIGER 미국달러단기채권액티브", symbol: "329750", currency: "KRW", category: "채권" },
+  { name: "TIGER 미국배당다우존스", symbol: "458730", currency: "KRW", category: "다우존스" },
+  { name: "Invesco QQQ Trust", symbol: "QQQ", currency: "USD", category: "해외 ETF" },
+  { name: "JPMorgan Nasdaq Equity Premium Income ETF", symbol: "JEPQ", currency: "USD", category: "해외 ETF" },
+  { name: "iShares Gold Trust", symbol: "IAU", currency: "USD", category: "금" },
+  { name: "iShares 7-10Y Treasury bond", symbol: "IEF", currency: "USD", category: "채권" },
+  { name: "20+Y", symbol: "TLT", currency: "USD", category: "채권" },
+  { name: "Vanguard Total Stock Market", symbol: "VTI", currency: "USD", category: "해외 ETF" },
+  { name: "Vanguard FTSE Developed Markets", symbol: "VEA", currency: "USD", category: "해외 ETF" },
+  { name: "Vanguard FTSE Emerging Markets", symbol: "VWO", currency: "USD", category: "해외 ETF" },
+  { name: "Invesco DB Commodity Tracking", symbol: "DBC", currency: "USD", category: "해외 ETF" },
+  { name: "Schwab US Dividend Equity", symbol: "SCHD", currency: "USD", category: "해외 ETF" },
 ];
 
 export const targetAssets: readonly TargetAsset[] = [
@@ -15,16 +34,16 @@ export const targetAssets: readonly TargetAsset[] = [
   { accountId: "irp-future", assetClass: "Nasdaq 100", symbol: "379810", productName: "KODEX 미국나스닥100 TR", suitability: "IRP/연금저축", targetPercent: 30 },
   { accountId: "irp-future", assetClass: "Bonds", symbol: "453850", productName: "ACE 미국30년 국채액티브(H)", suitability: "IRP", targetPercent: 20 },
   { accountId: "irp-future", assetClass: "Bonds", symbol: "329750", productName: "TIGER 미국달러단기채권액티브", suitability: "IRP", targetPercent: 20 },
-  { accountId: "global-shinhan", assetClass: "Nasdaq 100", symbol: "QQQ", productName: "Invesco QQQ Trust", suitability: "-", targetPercent: 20 },
-  { accountId: "global-shinhan", assetClass: "S&P 500", symbol: "JEPQ", productName: "JPMorgan Nasdaq Equity Premium Income ETF", suitability: "-", targetPercent: 5 },
-  { accountId: "global-shinhan", assetClass: "Gold", symbol: "IAU", productName: "iShares Gold Trust", suitability: "-", targetPercent: 10 },
-  { accountId: "global-shinhan", assetClass: "Bonds", symbol: "IEF", productName: "iShares 7-10Y Treasury bond", suitability: "-", targetPercent: 7.5 },
-  { accountId: "global-shinhan", assetClass: "Bonds", symbol: "TLT", productName: "20+Y", suitability: "-", targetPercent: 7.5 },
-  { accountId: "global-shinhan", assetClass: "Broad Market", symbol: "VTI", productName: "Vanguard Total Stock Market", suitability: "-", targetPercent: 5 },
-  { accountId: "global-shinhan", assetClass: "Broad Market", symbol: "VEA", productName: "Vanguard FTSE Developed Markets", suitability: "-", targetPercent: 10 },
-  { accountId: "global-shinhan", assetClass: "Broad Market", symbol: "VWO", productName: "Vanguard FTSE Emerging Markets", suitability: "-", targetPercent: 5 },
-  { accountId: "global-shinhan", assetClass: "Commodities", symbol: "DBC", productName: "Invesco DB Commodity Tracking", suitability: "-", targetPercent: 5 },
-  { accountId: "global-shinhan", assetClass: "Dow Jones Dividend", symbol: "SCHD", productName: "Schwab US Dividend Equity", suitability: "-", targetPercent: 15 },
+  { accountId: "global-shinhan", assetClass: "Nasdaq 100", symbol: "QQQ", productName: "Invesco QQQ Trust", suitability: "일반", targetPercent: 20 },
+  { accountId: "global-shinhan", assetClass: "S&P 500", symbol: "JEPQ", productName: "JPMorgan Nasdaq Equity Premium Income ETF", suitability: "일반", targetPercent: 5 },
+  { accountId: "global-shinhan", assetClass: "Gold", symbol: "IAU", productName: "iShares Gold Trust", suitability: "일반", targetPercent: 10 },
+  { accountId: "global-shinhan", assetClass: "Bonds", symbol: "IEF", productName: "iShares 7-10Y Treasury bond", suitability: "일반", targetPercent: 7.5 },
+  { accountId: "global-shinhan", assetClass: "Bonds", symbol: "TLT", productName: "20+Y", suitability: "일반", targetPercent: 7.5 },
+  { accountId: "global-shinhan", assetClass: "Broad Market", symbol: "VTI", productName: "Vanguard Total Stock Market", suitability: "일반", targetPercent: 5 },
+  { accountId: "global-shinhan", assetClass: "Broad Market", symbol: "VEA", productName: "Vanguard FTSE Developed Markets", suitability: "일반", targetPercent: 10 },
+  { accountId: "global-shinhan", assetClass: "Broad Market", symbol: "VWO", productName: "Vanguard FTSE Emerging Markets", suitability: "일반", targetPercent: 5 },
+  { accountId: "global-shinhan", assetClass: "Commodities", symbol: "DBC", productName: "Invesco DB Commodity Tracking", suitability: "일반", targetPercent: 5 },
+  { accountId: "global-shinhan", assetClass: "Dow Jones Dividend", symbol: "SCHD", productName: "Schwab US Dividend Equity", suitability: "일반", targetPercent: 15 },
 ];
 
 export const holdings: readonly Holding[] = [

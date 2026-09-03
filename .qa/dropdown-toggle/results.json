@@ -1,0 +1,32 @@
+[
+  {
+    "suffix": "desktop",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "countBeforeArrow": 0,
+    "countAfterArrowOpen": 1,
+    "optionCountAfterArrowOpen": 16,
+    "countAfterSecondClick": 0,
+    "nameCountAfterOpen": 1,
+    "countAfterMouseLeave": 0,
+    "overflowX": false,
+    "consoleErrors": []
+  },
+  {
+    "suffix": "mobile",
+    "viewport": {
+      "width": 375,
+      "height": 900
+    },
+    "countBeforeArrow": 0,
+    "countAfterArrowOpen": 1,
+    "optionCountAfterArrowOpen": 16,
+    "countAfterSecondClick": 0,
+    "nameCountAfterOpen": 1,
+    "countAfterMouseLeave": 0,
+    "overflowX": false,
+    "consoleErrors": []
+  }
+]

@@ -5,31 +5,27 @@ import { AccountManager } from "./components/AccountManager";
 import { AllocationDonut } from "./components/AllocationDonut";
 import { AppShellNav, type AppView, type PortfolioView } from "./components/AppShellNav";
 import { HoldingsTable } from "./components/HoldingsTable";
+import { InstrumentManager } from "./components/InstrumentManager";
 import { MetricTile } from "./components/MetricTile";
+import { ResizableAnalysisGrid } from "./components/ResizableAnalysisGrid";
 import { StrategyTable } from "./components/StrategyTable";
-import { accounts, cashPositions, holdings, targetAssets } from "./data";
+import { accounts, cashPositions, holdings, instruments, targetAssets } from "./data";
 import { formatKrw, formatPercent } from "./format";
-import type { AccountDraft, AccountId, SymbolCode, TargetAsset } from "./types";
-
-const updateTargetPercent = (
-  targets: readonly TargetAsset[],
-  accountId: AccountId,
-  symbol: SymbolCode,
-  targetPercent: number,
-): readonly TargetAsset[] =>
-  targets.map((target) =>
-    target.accountId === accountId && target.symbol === symbol ? { ...target, targetPercent } : target,
-  );
+import { addInstrument, deleteInstrument, updateInstrument } from "./instrumentState";
+import { addTargetAllocation, deleteTargetAllocation, updateTargetAllocation } from "./targetAllocationState";
+import type { AccountDraft, AccountId, Instrument, InstrumentDraft, SymbolCode, TargetAllocationDraft, TargetAllocationKey } from "./types";
 
 export function App() {
   const [activeView, setActiveView] = useState<AppView>("all");
   const [portfolio, setPortfolio] = useState<PortfolioState>({
     accounts,
+    instruments,
     targets: targetAssets,
     holdings,
     cashPositions,
   });
-  const activeAccount: PortfolioView = activeView === "accounts" ? "all" : activeView;
+  const [allocationPanelPercent, setAllocationPanelPercent] = useState(38);
+  const activeAccount: PortfolioView = activeView === "accounts" || activeView === "instruments" ? "all" : activeView;
   const snapshot = useMemo(
     () =>
       buildAccountSnapshot(
@@ -50,6 +46,25 @@ export function App() {
     setPortfolio((current) => deleteAccount(current, accountId));
     setActiveView((current) => (current === accountId ? "all" : current));
   };
+  const addManagedInstrument = (draft: InstrumentDraft) =>
+    setPortfolio((current) => ({ ...current, instruments: addInstrument(current.instruments, draft) }));
+  const updateManagedInstrument = (symbol: SymbolCode, draft: InstrumentDraft) =>
+    setPortfolio((current) => ({ ...current, instruments: updateInstrument(current.instruments, symbol, draft) }));
+  const deleteManagedInstrument = (symbol: SymbolCode) =>
+    setPortfolio((current) => ({ ...current, instruments: deleteInstrument(current.instruments, symbol) }));
+  const addManagedTargetAllocation = (draft: TargetAllocationDraft, instrument: Instrument) =>
+    setPortfolio((current) => ({ ...current, targets: addTargetAllocation(current.targets, draft, instrument) }));
+  const updateManagedTargetAllocation = (
+    key: TargetAllocationKey,
+    draft: TargetAllocationDraft,
+    instrument: Instrument,
+  ) =>
+    setPortfolio((current) => ({
+      ...current,
+      targets: updateTargetAllocation({ targets: current.targets, currentKey: key, draft, instrument }),
+    }));
+  const deleteManagedTargetAllocation = (key: TargetAllocationKey) =>
+    setPortfolio((current) => ({ ...current, targets: deleteTargetAllocation(current.targets, key) }));
 
   return (
     <div className="app-shell">
@@ -72,6 +87,22 @@ export function App() {
               onDeleteAccount={deleteManagedAccount}
             />
           </section>
+        ) : activeView === "instruments" ? (
+          <section className="metadata-view" aria-label="종목 메타 정보">
+            <header className="topbar">
+              <div>
+                <p className="eyebrow">Portfolio metadata</p>
+                <h1>종목 관리</h1>
+              </div>
+              <div className="summary-chip">{portfolio.instruments.length}개 종목</div>
+            </header>
+            <InstrumentManager
+              instruments={portfolio.instruments}
+              onAddInstrument={addManagedInstrument}
+              onUpdateInstrument={updateManagedInstrument}
+              onDeleteInstrument={deleteManagedInstrument}
+            />
+          </section>
         ) : (
           <>
             <header className="topbar">
@@ -87,20 +118,22 @@ export function App() {
               <MetricTile label="수익률" value={formatPercent(snapshot.returnPercent)} tone={snapshot.returnPercent >= 0 ? "gain" : "loss"} />
               <MetricTile label="현금" value={formatKrw(snapshot.cashValue)} tone="warning" />
             </section>
-            <div className="analysis-grid">
-              <AllocationDonut summary={summary} />
-              <StrategyTable
-                accounts={portfolio.accounts}
-                activeAccount={activeAccount}
-                targets={portfolio.targets}
-                onTargetPercentChange={(accountId, symbol, targetPercent) =>
-                  setPortfolio((current) => ({
-                    ...current,
-                    targets: updateTargetPercent(current.targets, accountId, symbol, targetPercent),
-                  }))
-                }
-              />
-            </div>
+            <ResizableAnalysisGrid
+              allocationPercent={allocationPanelPercent}
+              onAllocationPercentChange={setAllocationPanelPercent}
+              allocationPanel={<AllocationDonut summary={summary} />}
+              strategyPanel={
+                <StrategyTable
+                  accounts={portfolio.accounts}
+                  activeAccount={activeAccount}
+                  instruments={portfolio.instruments}
+                  targets={portfolio.targets}
+                  onAddTargetAllocation={addManagedTargetAllocation}
+                  onUpdateTargetAllocation={updateManagedTargetAllocation}
+                  onDeleteTargetAllocation={deleteManagedTargetAllocation}
+                />
+              }
+            />
             <HoldingsTable accounts={portfolio.accounts} rows={snapshot.rows} />
           </>
         )}

@@ -1,0 +1,40 @@
+[
+  {
+    "suffix": "desktop",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "editorVisibleBeforeOpen": 0,
+    "addDialogTitle": "목표 비중 추가",
+    "accountValue": "종합계좌",
+    "codeDropdownCount": 16,
+    "nameDropdownCount": 1,
+    "symbolAfterNamePick": "458730",
+    "categoryAfterNamePick": "다우존스",
+    "addButtonInsideViewport": true,
+    "editDialogTitle": "목표 비중 수정",
+    "editSymbolValue": "QQQ",
+    "overflowX": false,
+    "consoleErrors": []
+  },
+  {
+    "suffix": "mobile",
+    "viewport": {
+      "width": 375,
+      "height": 900
+    },
+    "editorVisibleBeforeOpen": 0,
+    "addDialogTitle": "목표 비중 추가",
+    "accountValue": "종합계좌",
+    "codeDropdownCount": 16,
+    "nameDropdownCount": 1,
+    "symbolAfterNamePick": "458730",
+    "categoryAfterNamePick": "다우존스",
+    "addButtonInsideViewport": true,
+    "editDialogTitle": "목표 비중 수정",
+    "editSymbolValue": "QQQ",
+    "overflowX": false,
+    "consoleErrors": []
+  }
+]

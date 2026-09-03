@@ -80,7 +80,7 @@ All spacing derives from 4px.
 ### Grid
 - Max content width: 1680px.
 - App shell: fixed left navigation at wide widths, scrolling main content.
-- Product grid: two-column analysis area above a full-width table; collapses to one column below 1024px.
+- Product grid: two-column analysis area above a full-width table; the allocation and target panels use a visible width slider so users can adapt the split to their display, and collapse to one column on compact mobile widths.
 - Breakpoints: compact 640px, wide 1024px, full 1280px.
 
 ### Rules
@@ -117,6 +117,24 @@ All spacing derives from 4px.
 - **Motion**: focus ring only.
 - **Layout**: horizontal reel inside bounded panel.
 
+### Target Allocation Manager
+- **Structure**: strategy table with an explicit add command; account-bound modal editor, searchable instrument-code and instrument-name dropdowns, read-only asset class, suitability select, percent input with `%` suffix, running account total, target table actions.
+- **Variants**: all-portfolio read/edit view, account-specific add modal, edit modal, duplicate symbol blocked state, unregistered symbol blocked state.
+- **Spacing**: --space-3 and --space-5.
+- **States**: default, focus, disabled, read-only, editing, validation feedback.
+- **Accessibility**: visible Korean labels for 계좌, 종목코드, 종목명, 자산군, 적합성, 목표비율; running total uses live text.
+- **Motion**: 120ms control feedback only.
+- **Layout**: the strategy panel is primarily a table; editing appears only in a centered modal so occasional edits do not consume the everyday dashboard view.
+
+### Resizable Analysis Grid
+- **Structure**: compact width control above the allocation and target panels; two bounded panels sharing one row.
+- **Variants**: desktop adjustable split, compact stacked layout.
+- **Spacing**: --space-3 above the grid and --space-6 between panels.
+- **States**: range focus, hover, active drag.
+- **Accessibility**: range input has an explicit Korean label for the allocation panel width.
+- **Motion**: native range control only.
+- **Layout**: target allocation receives the larger default width while the allocation panel remains readable; tables keep their own horizontal scroll.
+
 ### Editable Field
 - **Structure**: visible label or table header, input/select, helper/error slot where needed.
 - **Variants**: text, number, percent, select.
@@ -143,6 +161,15 @@ All spacing derives from 4px.
 - **Accessibility**: every input has a visible label; edit/delete buttons include text and icons.
 - **Motion**: 120ms press feedback.
 - **Layout**: standalone metadata view; intrinsic grid for form fields, table-like account list below. It is never embedded in the portfolio analysis/dashboard panel.
+
+### Instrument Manager
+- **Structure**: separate metadata screen header, compact instrument form, instrument rows, currency/category badges, edit/delete commands.
+- **Variants**: add mode, edit mode, duplicate-code blocked state.
+- **Spacing**: --space-3 and --space-4.
+- **States**: default, hover, active, focus, disabled, editing, validation feedback.
+- **Accessibility**: 종목명, 종목코드, 거래통화, 종류 all use visible labels; edit/delete buttons include text and icons.
+- **Motion**: 120ms press feedback.
+- **Layout**: standalone metadata view alongside account metadata; never embedded in the portfolio analysis/dashboard panel.
 
 ## 6. Motion & Interaction
 

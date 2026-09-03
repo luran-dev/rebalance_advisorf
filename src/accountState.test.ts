@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { addAccount, deleteAccount, updateAccount, type PortfolioState } from "./accountState";
-import { accounts, cashPositions, holdings, targetAssets } from "./data";
+import { accounts, cashPositions, holdings, instruments, targetAssets } from "./data";
 
 const baseState: PortfolioState = {
   accounts,
+  instruments,
   targets: targetAssets,
   holdings,
   cashPositions,
