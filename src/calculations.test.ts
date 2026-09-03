@@ -1,0 +1,26 @@
+import { describe, expect, it } from "vitest";
+import { buildAccountSnapshot, summarizeAssets } from "./calculations";
+import { cashPositions, holdings, targetAssets } from "./data";
+
+describe("buildAccountSnapshot", () => {
+  it("calculates buy and sell guidance when holdings drift from targets", () => {
+    const snapshot = buildAccountSnapshot(holdings, targetAssets, cashPositions, "pension-future");
+    const nasdaqRow = snapshot.rows.find((row) => row.symbol === "379810");
+    const bondRow = snapshot.rows.find((row) => row.symbol === "453850");
+
+    expect(nasdaqRow?.direction).toBe("sell");
+    expect(bondRow?.direction).toBe("buy");
+    expect(snapshot.marketValue).toBeGreaterThan(snapshot.investedValue);
+  });
+});
+
+describe("summarizeAssets", () => {
+  it("adds cash as its own allocation bucket", () => {
+    const snapshot = buildAccountSnapshot(holdings, targetAssets, cashPositions);
+    const summary = summarizeAssets(snapshot.rows, snapshot.cashValue);
+    const cash = summary.find((item) => item.assetClass === "현금");
+
+    expect(cash?.marketValue).toBe(45766144);
+    expect(summary.reduce((total, item) => total + item.percent, 0)).toBeCloseTo(100);
+  });
+});

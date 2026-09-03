@@ -1,0 +1,134 @@
+import type {
+  AccountId,
+  AssetSummary,
+  CashPosition,
+  Holding,
+  HoldingRow,
+  SymbolCode,
+  TargetAsset,
+  TradeDirection,
+} from "./types";
+
+export const FX_RATE_KRW_PER_USD = 1279;
+
+type AccountSnapshot = {
+  readonly rows: readonly HoldingRow[];
+  readonly cashValue: number;
+  readonly investedValue: number;
+  readonly marketValue: number;
+  readonly returnPercent: number;
+};
+
+const toKrw = (value: number, currency: "KRW" | "USD") =>
+  currency === "USD" ? value * FX_RATE_KRW_PER_USD : value;
+
+const targetKey = (accountId: AccountId, symbol: SymbolCode) => `${accountId}:${symbol}`;
+
+const tradeDirection = (tradeQuantity: number): TradeDirection => {
+  if (tradeQuantity > 0) {
+    return "buy";
+  }
+  if (tradeQuantity < 0) {
+    return "sell";
+  }
+  return "hold";
+};
+
+export const sumCash = (
+  cashPositions: readonly CashPosition[],
+  accountId?: AccountId,
+): number =>
+  cashPositions
+    .filter((cash) => accountId === undefined || cash.accountId === accountId)
+    .reduce((total, cash) => total + toKrw(cash.amount, cash.currency), 0);
+
+export const buildRows = (
+  holdings: readonly Holding[],
+  targets: readonly TargetAsset[],
+  cashPositions: readonly CashPosition[],
+  accountId?: AccountId,
+): readonly HoldingRow[] => {
+  const scopedHoldings = holdings.filter(
+    (holding) => accountId === undefined || holding.accountId === accountId,
+  );
+  const targetBySymbol = new Map(
+    targets.map((target) => [targetKey(target.accountId, target.symbol), target.targetPercent]),
+  );
+  const marketTotal =
+    scopedHoldings.reduce(
+      (total, holding) => total + toKrw(holding.currentPrice * holding.quantity, holding.currency),
+      0,
+    ) + sumCash(cashPositions, accountId);
+
+  return scopedHoldings.map((holding) => {
+    const marketValue = toKrw(holding.currentPrice * holding.quantity, holding.currency);
+    const investedValue = toKrw(holding.averagePrice * holding.quantity, holding.currency);
+    const targetPercent = targetBySymbol.get(targetKey(holding.accountId, holding.symbol)) ?? 0;
+    const targetValue = marketTotal * (targetPercent / 100);
+    const targetQuantity = holding.currentPrice > 0 ? targetValue / toKrw(holding.currentPrice, holding.currency) : 0;
+    const tradeQuantity = Math.round(targetQuantity - holding.quantity);
+
+    return {
+      ...holding,
+      investedValue,
+      marketValue,
+      profit: marketValue - investedValue,
+      returnPercent: investedValue === 0 ? 0 : ((marketValue - investedValue) / investedValue) * 100,
+      currentPercent: marketTotal === 0 ? 0 : (marketValue / marketTotal) * 100,
+      targetPercent,
+      targetQuantity,
+      tradeQuantity,
+      direction: tradeDirection(tradeQuantity),
+    };
+  });
+};
+
+export const buildAccountSnapshot = (
+  holdings: readonly Holding[],
+  targets: readonly TargetAsset[],
+  cashPositions: readonly CashPosition[],
+  accountId?: AccountId,
+): AccountSnapshot => {
+  const rows = buildRows(holdings, targets, cashPositions, accountId);
+  const cashValue = sumCash(cashPositions, accountId);
+  const investedValue = rows.reduce((total, row) => total + row.investedValue, 0) + cashValue;
+  const marketValue = rows.reduce((total, row) => total + row.marketValue, 0) + cashValue;
+
+  return {
+    rows,
+    cashValue,
+    investedValue,
+    marketValue,
+    returnPercent: investedValue === 0 ? 0 : ((marketValue - investedValue) / investedValue) * 100,
+  };
+};
+
+export const summarizeAssets = (rows: readonly HoldingRow[], cashValue: number): readonly AssetSummary[] => {
+  const grouped = new Map<string, Omit<AssetSummary, "returnPercent" | "percent">>();
+
+  for (const row of rows) {
+    const existing = grouped.get(row.assetClass);
+    const next = {
+      assetClass: row.assetClass,
+      investedValue: (existing?.investedValue ?? 0) + row.investedValue,
+      marketValue: (existing?.marketValue ?? 0) + row.marketValue,
+    };
+    grouped.set(row.assetClass, next);
+  }
+
+  grouped.set("현금", {
+    assetClass: "현금",
+    investedValue: cashValue,
+    marketValue: cashValue,
+  });
+
+  const total = Array.from(grouped.values()).reduce((sum, item) => sum + item.marketValue, 0);
+
+  return Array.from(grouped.values())
+    .map((item) => ({
+      ...item,
+      returnPercent: item.investedValue === 0 ? 0 : ((item.marketValue - item.investedValue) / item.investedValue) * 100,
+      percent: total === 0 ? 0 : (item.marketValue / total) * 100,
+    }))
+    .sort((a, b) => b.marketValue - a.marketValue);
+};
