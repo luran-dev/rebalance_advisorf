@@ -86,10 +86,26 @@ PORT=4180 pnpm app:status
 PORT=4180 pnpm app:stop
 ```
 
+또는 실행 옵션으로 직접 지정할 수 있습니다.
+
+```bash
+pnpm app:start -- --port 4180
+pnpm app:restart -- --port 4180
+./scripts/rebalance-advisor.sh start --port 4180
+```
+
+앱이 실행 중이면 `pnpm app:status`가 시작 당시의 포트를 보여줍니다.
+
 호스트를 바꾸려면 `HOST` 환경변수를 사용합니다.
 
 ```bash
 HOST=0.0.0.0 PORT=4173 pnpm app:start
+```
+
+호스트도 실행 옵션으로 지정할 수 있습니다.
+
+```bash
+pnpm app:start -- --host 0.0.0.0 --port 4173
 ```
 
 ## Script
@@ -98,6 +114,7 @@ package script 대신 직접 실행할 수도 있습니다.
 
 ```bash
 ./scripts/rebalance-advisor.sh start
+./scripts/rebalance-advisor.sh start --port 4180
 ./scripts/rebalance-advisor.sh stop
 ./scripts/rebalance-advisor.sh restart
 ./scripts/rebalance-advisor.sh status
