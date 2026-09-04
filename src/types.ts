@@ -120,6 +120,50 @@ export type MarketQuote = {
   readonly source: string;
 };
 
+export type MarketRange = "1w" | "1m" | "3m" | "6m" | "1y";
+
+export type MarketHistoryItem = {
+  readonly date: string;
+  readonly open: number;
+  readonly high: number;
+  readonly low: number;
+  readonly close: number;
+  readonly volume: number;
+};
+
+export type MarketHistory = {
+  readonly source: string;
+  readonly currency: Currency;
+  readonly code: SymbolCode;
+  readonly items: readonly MarketHistoryItem[];
+};
+
+export type NewsItem = {
+  readonly title: string;
+  readonly link: string;
+  readonly publisher: string;
+  readonly publishedAt: string;
+};
+
+export type NewsResult = {
+  readonly source: string;
+  readonly items: readonly NewsItem[];
+};
+
+export type MarketDetailSubject = {
+  readonly accountId: AccountId;
+  readonly accountName?: string;
+  readonly assetClass: string;
+  readonly symbol: SymbolCode;
+  readonly productName: string;
+  readonly suitability: Suitability | "-";
+  readonly currency: Currency;
+  readonly currentPercent?: number;
+  readonly targetPercent?: number;
+  readonly returnPercent?: number;
+  readonly marketValue?: number;
+};
+
 export type FxQuote = {
   readonly source: string;
   readonly currency: Currency;

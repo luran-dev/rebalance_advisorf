@@ -1,3 +1,4 @@
+import type { PortfolioState } from "./accountState";
 import type { FxQuote, Instrument, InstrumentDraft, MarketQuote, SymbolCode } from "./types";
 
 const normalizeSymbol = (symbol: string): SymbolCode => symbol.trim().toUpperCase();
@@ -33,6 +34,39 @@ export const updateInstrument = (
   draft: InstrumentDraft,
 ): readonly Instrument[] =>
   instruments.map((instrument) => (instrument.symbol === currentSymbol ? normalizeDraft(draft) : instrument));
+
+export const updatePortfolioInstrument = (
+  state: PortfolioState,
+  currentSymbol: SymbolCode,
+  draft: InstrumentDraft,
+): PortfolioState => {
+  const instrument = normalizeDraft(draft);
+  return {
+    ...state,
+    instruments: updateInstrument(state.instruments, currentSymbol, draft),
+    targets: state.targets.map((target) =>
+      target.symbol === currentSymbol
+        ? {
+            ...target,
+            assetClass: instrument.category,
+            symbol: instrument.symbol,
+            productName: instrument.name,
+          }
+        : target,
+    ),
+    holdings: state.holdings.map((holding) =>
+      holding.symbol === currentSymbol
+        ? {
+            ...holding,
+            assetClass: instrument.category,
+            symbol: instrument.symbol,
+            productName: instrument.name,
+            currency: instrument.currency,
+          }
+        : holding,
+    ),
+  };
+};
 
 export const deleteInstrument = (
   instruments: readonly Instrument[],

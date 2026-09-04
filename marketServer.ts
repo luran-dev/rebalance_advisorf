@@ -1,6 +1,6 @@
 import type { Plugin } from "vite";
 
-type RangeKey = "1w" | "3m" | "6m" | "1y";
+type RangeKey = "1w" | "1m" | "3m" | "6m" | "1y";
 
 type NasdaqRow = {
   readonly date?: unknown;
@@ -71,6 +71,22 @@ const fetchJson = async (url: string, headers: Record<string, string>): Promise<
   return response.json();
 };
 
+const decodeXml = (value: string): string =>
+  value
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+
+const xmlText = (value: string, tag: string): string => {
+  const pattern = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`);
+  return decodeXml(value.match(pattern)?.[1] ?? "").trim();
+};
+
+const publisherFromSource = (source: string): string => source.replace(/\s+-\s+Google News$/i, "").trim();
+
 const handleFx = async (requestUrl: string | undefined, response: MarketResponseWriter) => {
   const url = new URL(requestUrl ?? "", "http://localhost");
   const currency = (url.searchParams.get("currency") ?? "").trim().toUpperCase();
@@ -113,6 +129,33 @@ const handleFx = async (requestUrl: string | undefined, response: MarketResponse
     });
   } catch (error) {
     sendJson(response, 502, { error: error instanceof Error ? error.message : "fx_request_failed" });
+  }
+};
+
+const handleNews = async (requestUrl: string | undefined, response: MarketResponseWriter) => {
+  const url = new URL(requestUrl ?? "", "http://localhost");
+  const query = (url.searchParams.get("q") ?? "").trim();
+  if (query.length === 0 || query.length > 80) {
+    sendJson(response, 400, { error: "invalid_query" });
+    return;
+  }
+
+  try {
+    const newsUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=ko&gl=KR&ceid=KR:ko`;
+    const text = await fetchText(newsUrl);
+    const items = [...text.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0, 8).map((match) => {
+      const body = match[1] ?? "";
+      const source = xmlText(body, "source");
+      return {
+        title: xmlText(body, "title"),
+        link: xmlText(body, "link"),
+        publisher: publisherFromSource(source),
+        publishedAt: xmlText(body, "pubDate"),
+      };
+    });
+    sendJson(response, 200, { source: "Google News", items });
+  } catch (error) {
+    sendJson(response, 502, { error: error instanceof Error ? error.message : "news_request_failed" });
   }
 };
 
@@ -163,8 +206,11 @@ const handleMarket = async (requestUrl: string | undefined, response: MarketResp
   }
 
   const range = url.searchParams.get("range");
-  const daysByRange: Readonly<Record<RangeKey, number>> = { "1w": 10, "3m": 100, "6m": 190, "1y": 375 };
-  const days = range === "1w" || range === "3m" || range === "6m" || range === "1y" ? daysByRange[range] : 40;
+  const daysByRange: Readonly<Record<RangeKey, number>> = { "1w": 10, "1m": 45, "3m": 100, "6m": 190, "1y": 375 };
+  const days =
+    range === "1w" || range === "1m" || range === "3m" || range === "6m" || range === "1y"
+      ? daysByRange[range]
+      : 40;
   const endDate = new Date();
   const startDate = new Date(endDate.getTime() - days * 86400000);
 
@@ -190,6 +236,10 @@ export const marketServerPlugin = (): Plugin => ({
       const requestUrl = "url" in request && typeof request.url === "string" ? request.url : undefined;
       void handleMarket(requestUrl, response);
     });
+    server.middlewares.use("/api/news", (request, response) => {
+      const requestUrl = "url" in request && typeof request.url === "string" ? request.url : undefined;
+      void handleNews(requestUrl, response);
+    });
   },
   configurePreviewServer(server) {
     server.middlewares.use("/api/fx", (request, response) => {
@@ -199,6 +249,10 @@ export const marketServerPlugin = (): Plugin => ({
     server.middlewares.use("/api/market", (request, response) => {
       const requestUrl = "url" in request && typeof request.url === "string" ? request.url : undefined;
       void handleMarket(requestUrl, response);
+    });
+    server.middlewares.use("/api/news", (request, response) => {
+      const requestUrl = "url" in request && typeof request.url === "string" ? request.url : undefined;
+      void handleNews(requestUrl, response);
     });
   },
 });

@@ -92,12 +92,12 @@ All spacing derives from 4px.
 
 ### App Shell
 - **Structure**: sidebar navigation, top summary rail, scrollable main.
-- **Variants**: desktop fixed sidebar, mobile top navigation.
+- **Variants**: desktop fixed sidebar, desktop collapsed icon rail, mobile top navigation.
 - **Spacing**: --space-4 to --space-6.
-- **States**: active, hover, focus.
-- **Accessibility**: `nav`, `main`, visible focus, current page with `aria-current`.
-- **Motion**: 140ms transform and background transitions.
-- **Layout**: fixed-sidenav-shell; main is the scroll owner.
+- **States**: active, hover, focus, collapsed.
+- **Accessibility**: `nav`, `main`, visible focus, icon-only collapsed buttons keep explicit accessible names.
+- **Motion**: 120ms button feedback only; sidebar width state changes immediately.
+- **Layout**: fixed-sidenav-shell; main is the scroll owner, and the collapsed sidebar preserves account navigation while giving more horizontal room to portfolio panels.
 
 ### Metric Tile
 - **Structure**: label, numeric value, optional trend.
@@ -110,9 +110,9 @@ All spacing derives from 4px.
 
 ### Dense Data Table
 - **Structure**: caption, sticky header, grouped body, numeric alignment.
-- **Variants**: strategy targets, holdings, asset classes.
+- **Variants**: strategy targets, holdings, asset classes, sortable weight and valuation columns.
 - **Spacing**: --space-2 and --space-3.
-- **States**: editable, read-only, row focus, empty.
+- **States**: editable, read-only, row focus, empty, sorted ascending, sorted descending.
 - **Accessibility**: semantic table, `scope`, labeled inputs.
 - **Motion**: focus ring only.
 - **Layout**: horizontal reel inside bounded panel.
@@ -124,7 +124,7 @@ All spacing derives from 4px.
 - **States**: default, focus, disabled, read-only, editing, validation feedback.
 - **Accessibility**: visible Korean labels for 계좌, 종목코드, 종목명, 자산군, 적합성, 목표비율; running total uses live text.
 - **Motion**: 120ms control feedback only.
-- **Layout**: the strategy panel is primarily a table; editing appears only in a centered modal so occasional edits do not consume the everyday dashboard view.
+- **Layout**: the strategy panel is primarily a table; editing appears only in a centered modal so occasional edits do not consume the everyday dashboard view. On compact viewports, target allocation dialogs use a two-column form so the save action remains visible even when the target table is empty.
 
 ### Resizable Analysis Grid
 - **Structure**: compact width control above the allocation and target panels; two bounded panels sharing one row.
@@ -154,13 +154,22 @@ All spacing derives from 4px.
 - **Layout**: cluster with wrapping.
 
 ### Holding Manager
-- **Structure**: current holdings table with price refresh, FX refresh, add/edit/delete commands; account-bound modal editor, target-allocation-backed symbol and name search, read-only KRW/USD currency, current price, quantity, and average price inputs.
-- **Variants**: all-portfolio read/edit view, account-specific add modal, edit modal, refreshing prices, refreshing FX rates, duplicate holding blocked state, target-missing blocked state.
+- **Structure**: current holdings table with price refresh, FX refresh, add/edit/delete commands, cash-position editor, analysis-opinion column; account-bound modal editor, target-allocation-backed symbol and name search, read-only KRW/USD currency, current price, quantity, and average price inputs.
+- **Variants**: all-portfolio read/edit view, account-specific add modal, edit modal, KRW/USD cash inputs, refreshing prices, refreshing FX rates, duplicate holding blocked state, target-missing blocked state.
 - **Spacing**: --space-3 and --space-5.
 - **States**: default, focus, disabled, editing, validation feedback.
-- **Accessibility**: account, symbol, name, currency, current price, quantity, and average price use visible Korean labels; buy/sell/hold guidance remains text-based.
+- **Accessibility**: account, KRW cash, USD cash, symbol, name, currency, current price, quantity, average price, and analysis opinion use visible Korean labels; buy/sell/hold guidance remains text-based.
 - **Motion**: 120ms control feedback only.
-- **Layout**: adding holdings is account-specific; all-portfolio view can edit existing rows but adds new rows only after the user chooses an account view; current price and FX refresh actions are panel-scoped and keep status text below the panel heading.
+- **Layout**: adding holdings is account-specific; all-portfolio view can edit existing rows and account cash balances but adds new rows only after the user chooses an account view; current price and FX refresh actions are panel-scoped and keep status text below the panel heading.
+
+### Market Detail Dialog
+- **Structure**: centered modal opened from a clickable instrument name, period segmented control, price chart, risk/weight/return metric strip, analysis notes, and Naver/Google news search actions.
+- **Variants**: loading chart, loaded chart, failed chart/news, holding-backed metrics, target-only metrics.
+- **Spacing**: --space-3 to --space-6.
+- **States**: default, hover, active, focus, selected period, close.
+- **Accessibility**: dialog has modal semantics, close button has an accessible name, chart has a text label, news links are real anchors.
+- **Motion**: 120ms control feedback; modal remains stable during async data loading.
+- **Layout**: bounded scroll dialog with the chart and analysis visible above the news area; at compact widths the metric strip collapses into intrinsic columns.
 
 ### Account Manager
 - **Structure**: separate metadata screen header, account rows, add command, icon-only edit/delete commands, modal account editor.
@@ -178,7 +187,16 @@ All spacing derives from 4px.
 - **States**: default, hover, active, focus, disabled, editing, validation feedback.
 - **Accessibility**: 종목명, 종목코드, 거래통화, 국가, 종류 all use visible labels in the dialog; icon-only edit/delete buttons use explicit accessible names.
 - **Motion**: 120ms press feedback.
-- **Layout**: standalone metadata view alongside account metadata; frequent scanning stays in the list and occasional editing opens in a centered modal.
+- **Layout**: standalone metadata view alongside account metadata; frequent scanning stays in the list and occasional editing opens in a centered viewport-level modal that is independent of the metadata list scroll length.
+
+### Data Manager
+- **Structure**: separate metadata screen with export, import, and reset actions plus a live status line.
+- **Variants**: export completed, import completed, import failed, reset confirmed.
+- **Spacing**: --space-3 to --space-5.
+- **States**: default, hover, active, focus, hidden file input.
+- **Accessibility**: import uses a labeled file input behind a visible button; reset asks for browser confirmation before replacing data.
+- **Motion**: 120ms button feedback only.
+- **Layout**: standalone metadata panel; actions use an intrinsic grid and never appear inside the portfolio dashboard panels.
 
 ## 6. Motion & Interaction
 

@@ -29,6 +29,10 @@ const toKrw = (value: number, currency: keyof ExchangeRates, exchangeRates: Exch
 
 const targetKey = (accountId: AccountId, symbol: SymbolCode) => `${accountId}:${symbol}`;
 
+const addToMap = (map: Map<AccountId, number>, accountId: AccountId, value: number) => {
+  map.set(accountId, (map.get(accountId) ?? 0) + value);
+};
+
 const tradeDirection = (tradeQuantity: number): TradeDirection => {
   if (tradeQuantity > 0) {
     return "buy";
@@ -61,19 +65,29 @@ export const buildRows = (
   const targetBySymbol = new Map(
     targets.map((target) => [targetKey(target.accountId, target.symbol), target.targetPercent]),
   );
-  const marketTotal =
-    scopedHoldings.reduce(
-      (total, holding) => total + toKrw(holding.currentPrice * holding.quantity, holding.currency, exchangeRates),
-      0,
-    ) + sumCash(cashPositions, accountId, exchangeRates);
+  const marketTotalByAccount = new Map<AccountId, number>();
+  for (const holding of scopedHoldings) {
+    addToMap(
+      marketTotalByAccount,
+      holding.accountId,
+      toKrw(holding.currentPrice * holding.quantity, holding.currency, exchangeRates),
+    );
+  }
+  for (const cash of cashPositions) {
+    if (accountId === undefined || cash.accountId === accountId) {
+      addToMap(marketTotalByAccount, cash.accountId, toKrw(cash.amount, cash.currency, exchangeRates));
+    }
+  }
 
   return scopedHoldings.map((holding) => {
     const marketValue = toKrw(holding.currentPrice * holding.quantity, holding.currency, exchangeRates);
     const investedValue = toKrw(holding.averagePrice * holding.quantity, holding.currency, exchangeRates);
     const targetPercent = targetBySymbol.get(targetKey(holding.accountId, holding.symbol)) ?? 0;
+    const marketTotal = marketTotalByAccount.get(holding.accountId) ?? 0;
     const targetValue = marketTotal * (targetPercent / 100);
     const targetQuantity = holding.currentPrice > 0 ? targetValue / toKrw(holding.currentPrice, holding.currency, exchangeRates) : 0;
-    const tradeQuantity = Math.round(targetQuantity - holding.quantity);
+    const roundedTradeQuantity = Math.round(targetQuantity - holding.quantity);
+    const tradeQuantity = roundedTradeQuantity === 0 ? 0 : roundedTradeQuantity;
 
     return {
       ...holding,

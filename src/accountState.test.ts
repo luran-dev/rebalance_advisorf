@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { addAccount, deleteAccount, updateAccount, updateAccountsDefaultFx, type PortfolioState } from "./accountState";
+import {
+  addAccount,
+  deleteAccount,
+  setCashPosition,
+  updateAccount,
+  updateAccountsDefaultFx,
+  type PortfolioState,
+} from "./accountState";
 import { accounts, cashPositions, holdings, instruments, targetAssets } from "./data";
 
 const baseState: PortfolioState = {
@@ -41,5 +48,17 @@ describe("account state management", () => {
     const next = updateAccountsDefaultFx(accounts, "USD", 1362.5583);
 
     expect(next.every((account) => account.defaultFx === 1362.5583)).toBe(true);
+  });
+
+  it("records KRW and USD cash balances per account", () => {
+    const withKrw = setCashPosition(baseState, { accountId: "global-shinhan", currency: "KRW", amount: 1_200_000 });
+    const withUsd = setCashPosition(withKrw, { accountId: "global-shinhan", currency: "USD", amount: 320.5 });
+
+    expect(withUsd.cashPositions).toEqual(
+      expect.arrayContaining([
+        { accountId: "global-shinhan", currency: "KRW", amount: 1_200_000 },
+        { accountId: "global-shinhan", currency: "USD", amount: 320.5 },
+      ]),
+    );
   });
 });

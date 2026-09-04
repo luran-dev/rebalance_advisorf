@@ -1,5 +1,6 @@
 import { Pencil, Plus, X } from "lucide-react";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import {
   countryOptions,
   instrumentCategories,
@@ -65,7 +66,7 @@ export function InstrumentDialog({
     onClose();
   };
 
-  return (
+  const dialog = (
     <div className="modal-backdrop" role="presentation">
       <section className="panel target-dialog" role="dialog" aria-modal="true" aria-labelledby="instrument-dialog-title">
         <div className="panel-heading">
@@ -129,4 +130,6 @@ export function InstrumentDialog({
       </section>
     </div>
   );
+
+  return createPortal(dialog, document.body);
 }

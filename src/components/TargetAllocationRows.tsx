@@ -1,5 +1,5 @@
 import { Pencil, Trash2 } from "lucide-react";
-import type { Account, Instrument, TargetAllocationKey, TargetAsset } from "../types";
+import type { Account, Instrument, MarketDetailSubject, TargetAllocationKey, TargetAsset } from "../types";
 
 export function TargetAllocationRows({
   rows,
@@ -7,12 +7,14 @@ export function TargetAllocationRows({
   instruments,
   onEditTarget,
   onDeleteTargetAllocation,
+  onOpenMarketDetail,
 }: {
   readonly rows: readonly TargetAsset[];
   readonly accounts: readonly Account[];
   readonly instruments: readonly Instrument[];
   readonly onEditTarget: (target: TargetAsset) => void;
   readonly onDeleteTargetAllocation: (key: TargetAllocationKey) => void;
+  readonly onOpenMarketDetail: (subject: MarketDetailSubject) => void;
 }) {
   return (
     <>
@@ -20,13 +22,34 @@ export function TargetAllocationRows({
         const instrument = instruments.find((item) => item.symbol === row.symbol);
         const rowName = instrument?.name ?? row.productName;
         const rowCategory = instrument?.category ?? row.assetClass;
+        const accountName = accounts.find((account) => account.id === row.accountId)?.name ?? row.accountId;
+        const currency = instrument?.currency ?? "KRW";
 
         return (
           <tr key={`${row.accountId}-${row.symbol}`}>
-            <td>{accounts.find((account) => account.id === row.accountId)?.name ?? row.accountId}</td>
+            <td>{accountName}</td>
             <td>{rowCategory}</td>
             <td className="ticker">{row.symbol}</td>
-            <td>{rowName}</td>
+            <td>
+              <button
+                className="asset-link"
+                type="button"
+                onClick={() =>
+                  onOpenMarketDetail({
+                    accountId: row.accountId,
+                    accountName,
+                    assetClass: rowCategory,
+                    symbol: row.symbol,
+                    productName: rowName,
+                    suitability: row.suitability,
+                    currency,
+                    targetPercent: row.targetPercent,
+                  })
+                }
+              >
+                {rowName}
+              </button>
+            </td>
             <td>{row.suitability}</td>
             <td>{row.targetPercent.toFixed(1)}%</td>
             <td>

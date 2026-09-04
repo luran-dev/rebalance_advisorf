@@ -1,3 +1,4 @@
+import type { PortfolioState } from "./accountState";
 import type { Account, CashPosition, Holding, Instrument, TargetAsset } from "./types";
 
 export const accounts: readonly Account[] = [
@@ -72,3 +73,11 @@ export const cashPositions: readonly CashPosition[] = [
   { accountId: "irp-future", currency: "KRW", amount: 3502 },
   { accountId: "global-shinhan", currency: "KRW", amount: 45749851 },
 ];
+
+export const portfolioSeed: PortfolioState = {
+  accounts,
+  instruments,
+  targets: targetAssets,
+  holdings,
+  cashPositions,
+};

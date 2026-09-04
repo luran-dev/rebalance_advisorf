@@ -8,6 +8,12 @@ export type PortfolioState = {
   readonly cashPositions: readonly CashPosition[];
 };
 
+export type CashPositionUpdate = {
+  readonly accountId: AccountId;
+  readonly currency: Currency;
+  readonly amount: number;
+};
+
 export const accountIdFromDraft = (draft: AccountDraft, existingAccounts: readonly Account[]): AccountId => {
   const base = draft.name
     .trim()
@@ -43,6 +49,22 @@ export const deleteAccount = (state: PortfolioState, accountId: AccountId): Port
   holdings: state.holdings.filter((holding) => holding.accountId !== accountId),
   cashPositions: state.cashPositions.filter((cash) => cash.accountId !== accountId),
 });
+
+export const setCashPosition = (state: PortfolioState, update: CashPositionUpdate): PortfolioState => {
+  const nextCash = { accountId: update.accountId, currency: update.currency, amount: update.amount };
+  const hasCash = state.cashPositions.some(
+    (cash) => cash.accountId === update.accountId && cash.currency === update.currency,
+  );
+
+  return {
+    ...state,
+    cashPositions: hasCash
+      ? state.cashPositions.map((cash) =>
+          cash.accountId === update.accountId && cash.currency === update.currency ? nextCash : cash,
+        )
+      : [...state.cashPositions, nextCash],
+  };
+};
 
 export const updateAccountsDefaultFx = (
   accounts: readonly Account[],

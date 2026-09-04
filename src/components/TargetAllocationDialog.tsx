@@ -1,5 +1,6 @@
 import { Pencil, Plus, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { hasTargetAllocation, sumTargetPercent } from "../targetAllocationState";
 import {
   suitabilityOptions,
@@ -127,9 +128,14 @@ export function TargetAllocationDialog({
     onClose();
   };
 
-  return (
+  const dialog = (
     <div className="modal-backdrop" role="presentation">
-      <section className="panel target-dialog" role="dialog" aria-modal="true" aria-labelledby="target-dialog-title">
+      <section
+        className="panel target-dialog target-allocation-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="target-dialog-title"
+      >
         <div className="panel-heading">
           <div>
             <p className="eyebrow">투자 전략 설정</p>
@@ -219,4 +225,6 @@ export function TargetAllocationDialog({
       </section>
     </div>
   );
+
+  return createPortal(dialog, document.body);
 }

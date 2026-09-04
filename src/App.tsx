@@ -1,18 +1,29 @@
-import { useMemo, useState } from "react";
-import { addAccount, deleteAccount, updateAccount, type PortfolioState } from "./accountState";
+import { useEffect, useMemo, useState } from "react";
+import {
+  addAccount,
+  deleteAccount,
+  setCashPosition,
+  updateAccount,
+  type CashPositionUpdate,
+  type PortfolioState,
+} from "./accountState";
 import { buildAccountSnapshot, summarizeAssets } from "./calculations";
 import { AccountManager } from "./components/AccountManager";
 import { AllocationDonut } from "./components/AllocationDonut";
 import { AppShellNav, type AppView, type PortfolioView } from "./components/AppShellNav";
 import { HoldingsTable } from "./components/HoldingsTable";
 import { InstrumentManager } from "./components/InstrumentManager";
+import { MarketDetailDialog } from "./components/MarketDetailDialog";
 import { MetricTile } from "./components/MetricTile";
 import { ResizableAnalysisGrid } from "./components/ResizableAnalysisGrid";
 import { StrategyTable } from "./components/StrategyTable";
-import { accounts, cashPositions, holdings, instruments, targetAssets } from "./data";
+import { DataManager } from "./components/DataManager";
+import { portfolioSeed } from "./data";
 import { formatKrw, formatPercent } from "./format";
 import { addHolding, deleteHolding, updateHolding, type HoldingSelection, type HoldingUpdate } from "./holdingState";
-import { addInstrument, deleteInstrument, updateInstrument } from "./instrumentState";
+import { addInstrument, deleteInstrument, updatePortfolioInstrument } from "./instrumentState";
+import { enrichMarketDetailSubject } from "./marketDetailSubject";
+import { clearPortfolioState, loadPortfolioState, savePortfolioState } from "./portfolioBackup";
 import { addTargetAllocation, deleteTargetAllocation, updateTargetAllocation } from "./targetAllocationState";
 import { usePortfolioRefresh } from "./usePortfolioRefresh";
 import type {
@@ -21,6 +32,7 @@ import type {
   HoldingKey,
   Instrument,
   InstrumentDraft,
+  MarketDetailSubject,
   SymbolCode,
   TargetAllocationDraft,
   TargetAllocationKey,
@@ -28,17 +40,26 @@ import type {
 
 export function App() {
   const [activeView, setActiveView] = useState<AppView>("all");
-  const [portfolio, setPortfolio] = useState<PortfolioState>({
-    accounts,
-    instruments,
-    targets: targetAssets,
-    holdings,
-    cashPositions,
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [portfolio, setPortfolio] = useState<PortfolioState>(() => {
+    try {
+      return loadPortfolioState() ?? portfolioSeed;
+    } catch (error) {
+      if (error instanceof Error) {
+        return portfolioSeed;
+      }
+      throw error;
+    }
   });
   const [allocationPanelPercent, setAllocationPanelPercent] = useState(38);
+  const [marketDetailSubject, setMarketDetailSubject] = useState<MarketDetailSubject | null>(null);
   const { exchangeRates, priceRefresh, fxRefresh, refreshVisibleHoldingPrices, refreshExchangeRates } =
     usePortfolioRefresh({ portfolio, setPortfolio });
-  const activeAccount: PortfolioView = activeView === "accounts" || activeView === "instruments" ? "all" : activeView;
+  const activeAccount: PortfolioView =
+    activeView === "accounts" || activeView === "instruments" || activeView === "data" ? "all" : activeView;
+  useEffect(() => {
+    savePortfolioState(portfolio);
+  }, [portfolio]);
   const snapshot = useMemo(
     () =>
       buildAccountSnapshot(
@@ -63,7 +84,7 @@ export function App() {
   const addManagedInstrument = (draft: InstrumentDraft) =>
     setPortfolio((current) => ({ ...current, instruments: addInstrument(current.instruments, draft) }));
   const updateManagedInstrument = (symbol: SymbolCode, draft: InstrumentDraft) =>
-    setPortfolio((current) => ({ ...current, instruments: updateInstrument(current.instruments, symbol, draft) }));
+    setPortfolio((current) => updatePortfolioInstrument(current, symbol, draft));
   const deleteManagedInstrument = (symbol: SymbolCode) =>
     setPortfolio((current) => ({ ...current, instruments: deleteInstrument(current.instruments, symbol) }));
   const addManagedTargetAllocation = (draft: TargetAllocationDraft, instrument: Instrument) =>
@@ -97,10 +118,29 @@ export function App() {
     }));
   const deleteManagedHolding = (key: HoldingKey) =>
     setPortfolio((current) => ({ ...current, holdings: deleteHolding(current.holdings, key) }));
+  const restorePortfolio = (state: PortfolioState) => {
+    setPortfolio(state);
+    setMarketDetailSubject(null);
+  };
+  const resetPortfolio = () => {
+    clearPortfolioState();
+    setPortfolio(portfolioSeed);
+    setMarketDetailSubject(null);
+  };
+  const openMarketDetail = (subject: MarketDetailSubject) => {
+    setMarketDetailSubject(enrichMarketDetailSubject(subject, snapshot.rows));
+  };
+  const updateCashPosition = (update: CashPositionUpdate) => setPortfolio((current) => setCashPosition(current, update));
 
   return (
-    <div className="app-shell">
-      <AppShellNav accounts={portfolio.accounts} activeView={activeView} onViewChange={setActiveView} />
+    <div className={isSidebarCollapsed ? "app-shell sidebar-collapsed" : "app-shell"}>
+      <AppShellNav
+        accounts={portfolio.accounts}
+        activeView={activeView}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapsed={() => setIsSidebarCollapsed((current) => !current)}
+        onViewChange={setActiveView}
+      />
       <main className="main-content">
         {activeView === "accounts" ? (
           <section className="metadata-view" aria-label="계좌 메타 정보">
@@ -135,6 +175,17 @@ export function App() {
               onDeleteInstrument={deleteManagedInstrument}
             />
           </section>
+        ) : activeView === "data" ? (
+          <section className="metadata-view" aria-label="데이터 백업과 복구">
+            <header className="topbar">
+              <div>
+                <p className="eyebrow">Portfolio data</p>
+                <h1>데이터 관리</h1>
+              </div>
+              <div className="summary-chip">{portfolio.holdings.length}개 보유 항목</div>
+            </header>
+            <DataManager portfolio={portfolio} onRestore={restorePortfolio} onReset={resetPortfolio} />
+          </section>
         ) : (
           <>
             <header className="topbar">
@@ -163,6 +214,7 @@ export function App() {
                   onAddTargetAllocation={addManagedTargetAllocation}
                   onUpdateTargetAllocation={updateManagedTargetAllocation}
                   onDeleteTargetAllocation={deleteManagedTargetAllocation}
+                  onOpenMarketDetail={openMarketDetail}
                 />
               }
             />
@@ -170,6 +222,8 @@ export function App() {
               accounts={portfolio.accounts}
               activeAccount={activeAccount}
               rows={snapshot.rows}
+              cashPositions={portfolio.cashPositions}
+              exchangeRates={exchangeRates}
               instruments={portfolio.instruments}
               targets={portfolio.targets}
               isRefreshingPrices={priceRefresh.isRunning}
@@ -181,9 +235,14 @@ export function App() {
               onAddHolding={addManagedHolding}
               onUpdateHolding={updateManagedHolding}
               onDeleteHolding={deleteManagedHolding}
+              onUpdateCashPosition={updateCashPosition}
+              onOpenMarketDetail={openMarketDetail}
             />
           </>
         )}
+        {marketDetailSubject !== null ? (
+          <MarketDetailDialog subject={marketDetailSubject} onClose={() => setMarketDetailSubject(null)} />
+        ) : null}
       </main>
     </div>
   );

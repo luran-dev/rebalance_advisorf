@@ -22,6 +22,46 @@ describe("buildAccountSnapshot", () => {
 
     expect(qqq?.marketValue).toBeCloseTo(709.24 * 1400);
   });
+
+  it("uses each account total including cash for all-account trade guidance", () => {
+    const accountHoldings = [
+      {
+        accountId: "one",
+        assetClass: "S&P500",
+        symbol: "AAA",
+        productName: "AAA",
+        suitability: "일반",
+        currency: "KRW",
+        currentPrice: 100,
+        quantity: 1,
+        averagePrice: 100,
+      },
+      {
+        accountId: "two",
+        assetClass: "S&P500",
+        symbol: "BBB",
+        productName: "BBB",
+        suitability: "일반",
+        currency: "KRW",
+        currentPrice: 100,
+        quantity: 1,
+        averagePrice: 100,
+      },
+    ] as const;
+    const accountTargets = [
+      { accountId: "one", assetClass: "S&P500", symbol: "AAA", productName: "AAA", suitability: "일반", targetPercent: 50 },
+      { accountId: "two", assetClass: "S&P500", symbol: "BBB", productName: "BBB", suitability: "일반", targetPercent: 50 },
+    ] as const;
+    const accountCash = [
+      { accountId: "one", currency: "KRW", amount: 900 },
+      { accountId: "two", currency: "KRW", amount: 0 },
+    ] as const;
+
+    const snapshot = buildAccountSnapshot(accountHoldings, accountTargets, accountCash);
+
+    expect(snapshot.rows.find((row) => row.symbol === "AAA")?.tradeQuantity).toBe(4);
+    expect(snapshot.rows.find((row) => row.symbol === "BBB")?.tradeQuantity).toBe(0);
+  });
 });
 
 describe("summarizeAssets", () => {

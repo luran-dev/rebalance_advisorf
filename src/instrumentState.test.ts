@@ -4,9 +4,11 @@ import {
   deleteInstrument,
   hasInstrumentSymbol,
   updateInstrument,
+  updatePortfolioInstrument,
   updateInstrumentFx,
   updateInstrumentPrice,
 } from "./instrumentState";
+import type { PortfolioState } from "./accountState";
 import type { Instrument } from "./types";
 
 const instruments: readonly Instrument[] = [
@@ -49,6 +51,50 @@ describe("instrument state management", () => {
       currency: "USD",
       category: "나스닥100",
     });
+  });
+
+  it("updates portfolio target and holding names when an instrument is renamed", () => {
+    const state: PortfolioState = {
+      accounts: [{ id: "global-shinhan", name: "종합계좌", broker: "신한" }],
+      instruments,
+      targets: [
+        {
+          accountId: "global-shinhan",
+          assetClass: "해외 ETF",
+          symbol: "QQQ",
+          productName: "Invesco QQQ Trust",
+          suitability: "일반",
+          targetPercent: 20,
+        },
+      ],
+      holdings: [
+        {
+          accountId: "global-shinhan",
+          assetClass: "해외 ETF",
+          symbol: "QQQ",
+          productName: "Invesco QQQ Trust",
+          suitability: "일반",
+          currency: "USD",
+          currentPrice: 709.24,
+          quantity: 1,
+          averagePrice: 280.69,
+        },
+      ],
+      cashPositions: [],
+    };
+
+    const next = updatePortfolioInstrument(state, "QQQ", {
+      name: "Invesco Nasdaq 100 ETF",
+      symbol: "QQQ",
+      country: "미국",
+      currency: "USD",
+      category: "나스닥100",
+    });
+
+    expect(next.targets[0]?.productName).toBe("Invesco Nasdaq 100 ETF");
+    expect(next.targets[0]?.assetClass).toBe("나스닥100");
+    expect(next.holdings[0]?.productName).toBe("Invesco Nasdaq 100 ETF");
+    expect(next.holdings[0]?.assetClass).toBe("나스닥100");
   });
 
   it("detects duplicate symbols while allowing the currently edited symbol", () => {

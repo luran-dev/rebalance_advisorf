@@ -1,11 +1,14 @@
 import { Plus, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
+import { nextSortDirection, sortByNumber, type SortDirection } from "../portfolioSort";
 import { TargetAllocationDialog, type TargetAllocationDialogState } from "./TargetAllocationDialog";
 import { TargetAllocationRows } from "./TargetAllocationRows";
+import { SortHeaderButton } from "./SortHeaderButton";
 import {
   type Account,
   type AccountId,
   type Instrument,
+  type MarketDetailSubject,
   type TargetAllocationDraft,
   type TargetAllocationKey,
   type TargetAsset,
@@ -26,6 +29,7 @@ export function StrategyTable({
   onAddTargetAllocation,
   onUpdateTargetAllocation,
   onDeleteTargetAllocation,
+  onOpenMarketDetail,
 }: {
   readonly accounts: readonly Account[];
   readonly activeAccount: AccountId | "all";
@@ -38,8 +42,14 @@ export function StrategyTable({
     instrument: Instrument,
   ) => void;
   readonly onDeleteTargetAllocation: (key: TargetAllocationKey) => void;
+  readonly onOpenMarketDetail: (subject: MarketDetailSubject) => void;
 }) {
-  const rows = targets.filter((target) => activeAccount === "all" || target.accountId === activeAccount);
+  const [weightSort, setWeightSort] = useState<SortDirection>("desc");
+  const rows = sortByNumber(
+    targets.filter((target) => activeAccount === "all" || target.accountId === activeAccount),
+    (target) => target.targetPercent,
+    weightSort,
+  );
   const defaultAccountId = accounts[0]?.id ?? "";
   const [dialogState, setDialogState] = useState<TargetAllocationDialogState | null>(null);
   const addAccountId = activeAccount === "all" ? defaultAccountId : activeAccount;
@@ -76,7 +86,13 @@ export function StrategyTable({
               <th scope="col">종목 코드</th>
               <th scope="col">종목명</th>
               <th scope="col">적합성</th>
-              <th scope="col">목표 비율</th>
+              <th scope="col">
+                <SortHeaderButton
+                  label="목표 비율"
+                  direction={weightSort}
+                  onToggle={() => setWeightSort((current) => nextSortDirection(current))}
+                />
+              </th>
               <th scope="col">관리</th>
             </tr>
           </thead>
@@ -87,6 +103,7 @@ export function StrategyTable({
               instruments={instruments}
               onEditTarget={(target) => setDialogState({ kind: "edit", target })}
               onDeleteTargetAllocation={onDeleteTargetAllocation}
+              onOpenMarketDetail={onOpenMarketDetail}
             />
           </tbody>
         </table>
