@@ -11,8 +11,8 @@ export function InstrumentManager({
   onDeleteInstrument,
 }: {
   readonly instruments: readonly Instrument[];
-  readonly onAddInstrument: (draft: InstrumentDraft) => void;
-  readonly onUpdateInstrument: (symbol: SymbolCode, draft: InstrumentDraft) => void;
+  readonly onAddInstrument: (draft: InstrumentDraft) => Promise<void>;
+  readonly onUpdateInstrument: (symbol: SymbolCode, draft: InstrumentDraft) => Promise<void>;
   readonly onDeleteInstrument: (symbol: SymbolCode) => void;
 }) {
   const [dialogState, setDialogState] = useState<InstrumentDialogState | null>(null);
@@ -45,6 +45,9 @@ export function InstrumentManager({
                 <span>{instrument.country}</span>
                 <span>{instrument.currency}</span>
                 <span>{instrument.category}</span>
+                <span className={`risk-badge risk-badge-${instrument.riskTone ?? "neutral"}`}>
+                  위험도 {instrument.riskLabel ?? "미계산"}
+                </span>
               </div>
               <div className="row-actions">
                 <button

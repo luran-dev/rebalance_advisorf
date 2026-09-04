@@ -10,6 +10,8 @@ import {
   type Holding,
   type Instrument,
   type InstrumentCategory,
+  type RiskLabel,
+  type RiskTone,
   type Suitability,
   type TargetAsset,
 } from "./types";
@@ -40,6 +42,10 @@ const isSuitability = (value: unknown): value is Suitability | "-" =>
 const isCategory = (value: unknown): value is InstrumentCategory =>
   instrumentCategories.find((category) => category === value) !== undefined;
 const isCountry = (value: unknown): value is Country => countryOptions.find((country) => country === value) !== undefined;
+const isRiskLabel = (value: unknown): value is RiskLabel =>
+  value === "데이터 부족" || value === "낮음" || value === "보통" || value === "높음";
+const isRiskTone = (value: unknown): value is RiskTone =>
+  value === "neutral" || value === "gain" || value === "loss" || value === "warning";
 
 const optionalString = (value: unknown): string | undefined => (isString(value) ? value : undefined);
 const optionalNumber = (value: unknown): number | undefined => (isNumber(value) ? value : undefined);
@@ -76,12 +82,22 @@ const instrumentFrom = (value: unknown): Instrument | null => {
   const fxRate = optionalNumber(read(value, "fxRate"));
   const fxUpdatedAt = optionalString(read(value, "fxUpdatedAt"));
   const fxSource = optionalString(read(value, "fxSource"));
+  const riskLabel = read(value, "riskLabel");
+  const riskTone = read(value, "riskTone");
+  const volatilityPercent = optionalNumber(read(value, "volatilityPercent"));
+  const riskUpdatedAt = optionalString(read(value, "riskUpdatedAt"));
+  const riskSource = optionalString(read(value, "riskSource"));
   return {
     name,
     symbol,
     country,
     currency,
     category,
+    ...(isRiskLabel(riskLabel) ? { riskLabel } : {}),
+    ...(isRiskTone(riskTone) ? { riskTone } : {}),
+    ...(volatilityPercent === undefined ? {} : { volatilityPercent }),
+    ...(riskUpdatedAt === undefined ? {} : { riskUpdatedAt }),
+    ...(riskSource === undefined ? {} : { riskSource }),
     ...(price === undefined ? {} : { price }),
     ...(priceUpdatedAt === undefined ? {} : { priceUpdatedAt }),
     ...(priceSource === undefined ? {} : { priceSource }),

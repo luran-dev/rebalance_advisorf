@@ -35,6 +35,35 @@ describe("instrument state management", () => {
     });
   });
 
+  it("adds an instrument with calculated risk metadata", () => {
+    const next = addInstrument(
+      instruments,
+      {
+        name: "  iShares Gold Trust  ",
+        symbol: " iau ",
+        country: "미국",
+        currency: "USD",
+        category: "금",
+      },
+      {
+        riskLabel: "보통",
+        riskTone: "warning",
+        volatilityPercent: 21.4,
+        riskUpdatedAt: "2026-09-04",
+        riskSource: "Nasdaq ETF",
+      },
+    );
+
+    expect(next.at(-1)).toMatchObject({
+      symbol: "IAU",
+      riskLabel: "보통",
+      riskTone: "warning",
+      volatilityPercent: 21.4,
+      riskUpdatedAt: "2026-09-04",
+      riskSource: "Nasdaq ETF",
+    });
+  });
+
   it("updates instrument metadata by its current symbol", () => {
     const next = updateInstrument(instruments, "QQQ", {
       name: "Invesco NASDAQ 100 ETF",

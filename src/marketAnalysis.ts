@@ -1,5 +1,5 @@
 import { formatKrw, formatPercent } from "./format";
-import type { MarketDetailSubject, MarketHistoryItem } from "./types";
+import type { MarketDetailSubject, MarketHistoryItem, RiskLabel, RiskTone } from "./types";
 
 export type MarketMetric = {
   readonly label: string;
@@ -8,8 +8,8 @@ export type MarketMetric = {
 };
 
 export type MarketAnalysis = {
-  readonly riskLabel: string;
-  readonly riskTone: "neutral" | "gain" | "loss" | "warning";
+  readonly riskLabel: RiskLabel;
+  readonly riskTone: RiskTone;
   readonly volatilityPercent: number | null;
   readonly metrics: readonly MarketMetric[];
   readonly comments: readonly string[];
@@ -30,7 +30,13 @@ const annualizedVolatility = (items: readonly MarketHistoryItem[]): number | nul
   return Math.sqrt(variance) * Math.sqrt(252) * 100;
 };
 
-const riskFromVolatility = (volatility: number | null): Pick<MarketAnalysis, "riskLabel" | "riskTone"> => {
+export type MarketRisk = {
+  readonly riskLabel: RiskLabel;
+  readonly riskTone: RiskTone;
+  readonly volatilityPercent: number | null;
+};
+
+const riskFromVolatility = (volatility: number | null): Pick<MarketRisk, "riskLabel" | "riskTone"> => {
   if (volatility === null) {
     return { riskLabel: "데이터 부족", riskTone: "neutral" };
   }
@@ -41,6 +47,11 @@ const riskFromVolatility = (volatility: number | null): Pick<MarketAnalysis, "ri
     return { riskLabel: "보통", riskTone: "warning" };
   }
   return { riskLabel: "높음", riskTone: "loss" };
+};
+
+export const buildMarketRisk = (history: readonly MarketHistoryItem[]): MarketRisk => {
+  const volatility = annualizedVolatility(history);
+  return { ...riskFromVolatility(volatility), volatilityPercent: volatility };
 };
 
 const commentsFor = (subject: MarketDetailSubject, volatility: number | null): readonly string[] => {
@@ -69,8 +80,7 @@ export const buildMarketAnalysis = (
   subject: MarketDetailSubject,
   history: readonly MarketHistoryItem[],
 ): MarketAnalysis => {
-  const volatility = annualizedVolatility(history);
-  const risk = riskFromVolatility(volatility);
+  const risk = buildMarketRisk(history);
   const metrics: readonly MarketMetric[] = [
     { label: "위험도", value: risk.riskLabel, tone: risk.riskTone },
     {
@@ -91,8 +101,7 @@ export const buildMarketAnalysis = (
   ];
   return {
     ...risk,
-    volatilityPercent: volatility,
     metrics,
-    comments: commentsFor(subject, volatility),
+    comments: commentsFor(subject, risk.volatilityPercent),
   };
 };

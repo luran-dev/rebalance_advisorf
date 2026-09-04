@@ -83,6 +83,7 @@ export function StrategyTable({
             <tr>
               <th scope="col">계좌</th>
               <th scope="col">자산군</th>
+              <th scope="col">위험도</th>
               <th scope="col">종목 코드</th>
               <th scope="col">종목명</th>
               <th scope="col">적합성</th>

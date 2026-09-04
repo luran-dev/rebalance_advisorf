@@ -38,9 +38,11 @@ export function InstrumentDialog({
   readonly state: InstrumentDialogState;
   readonly isDuplicate: (symbol: string) => boolean;
   readonly onClose: () => void;
-  readonly onAddInstrument: (draft: InstrumentDraft) => void;
-  readonly onUpdateInstrument: (symbol: string, draft: InstrumentDraft) => void;
+  readonly onAddInstrument: (draft: InstrumentDraft) => Promise<void>;
+  readonly onUpdateInstrument: (symbol: string, draft: InstrumentDraft) => Promise<void>;
 }) {
+  const [saveStatus, setSaveStatus] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   const [draft, setDraft] = useState<InstrumentDraft>(
     state.kind === "add"
       ? emptyDraft
@@ -53,17 +55,24 @@ export function InstrumentDialog({
         },
   );
   const duplicate = isDuplicate(draft.symbol);
-  const canSubmit = draft.name.trim().length > 0 && draft.symbol.trim().length > 0 && !duplicate;
-  const submit = () => {
+  const canSubmit = draft.name.trim().length > 0 && draft.symbol.trim().length > 0 && !duplicate && !isSaving;
+  const submit = async () => {
     if (!canSubmit) {
       return;
     }
-    if (state.kind === "add") {
-      onAddInstrument(draft);
-    } else {
-      onUpdateInstrument(state.instrument.symbol, draft);
+    setIsSaving(true);
+    setSaveStatus("위험도 계산 중");
+    try {
+      if (state.kind === "add") {
+        await onAddInstrument(draft);
+      } else {
+        await onUpdateInstrument(state.instrument.symbol, draft);
+      }
+      onClose();
+    } catch (error) {
+      setSaveStatus(error instanceof Error ? error.message : "종목을 저장하지 못했습니다.");
+      setIsSaving(false);
     }
-    onClose();
   };
 
   const dialog = (
@@ -120,12 +129,13 @@ export function InstrumentDialog({
             </select>
           </label>
           <div className="target-actions">
-            <button className="command command-primary" type="button" disabled={!canSubmit} onClick={submit}>
+            <button className="command command-primary" type="button" disabled={!canSubmit} onClick={() => void submit()}>
               {state.kind === "add" ? <Plus size={16} aria-hidden="true" /> : <Pencil size={16} aria-hidden="true" />}
-              {state.kind === "add" ? "추가" : "저장"}
+              {isSaving ? "계산 중" : state.kind === "add" ? "추가" : "저장"}
             </button>
           </div>
         </div>
+        {saveStatus ? <p className="target-hint">{saveStatus}</p> : null}
         {duplicate ? <p className="form-feedback target-feedback">이미 등록된 종목코드입니다.</p> : null}
       </section>
     </div>

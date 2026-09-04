@@ -1,6 +1,7 @@
 import { TrendingUp } from "lucide-react";
 import { formatPercent } from "../format";
-import type { AssetSummary } from "../types";
+import type { AssetSummary, RiskSummary } from "../types";
+import { RiskDistributionChart } from "./RiskDistributionChart";
 
 const palette = [
   "var(--accent-orange)",
@@ -14,7 +15,13 @@ const palette = [
   "var(--surface-subtle)",
 ] as const;
 
-export function AllocationDonut({ summary }: { readonly summary: readonly AssetSummary[] }) {
+export function AllocationDonut({
+  summary,
+  riskSummary,
+}: {
+  readonly summary: readonly AssetSummary[];
+  readonly riskSummary: readonly RiskSummary[];
+}) {
   let cursor = 0;
   const gradient = summary
     .map((item, index) => {
@@ -52,6 +59,7 @@ export function AllocationDonut({ summary }: { readonly summary: readonly AssetS
           ))}
         </div>
       </div>
+      <RiskDistributionChart summary={riskSummary} />
     </section>
   );
 }

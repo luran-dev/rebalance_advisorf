@@ -1,14 +1,27 @@
 import type { PortfolioState } from "./accountState";
-import type { FxQuote, Instrument, InstrumentDraft, MarketQuote, SymbolCode } from "./types";
+import type { FxQuote, Instrument, InstrumentDraft, MarketQuote, RiskLabel, RiskTone, SymbolCode } from "./types";
 
 const normalizeSymbol = (symbol: string): SymbolCode => symbol.trim().toUpperCase();
 
-const normalizeDraft = (draft: InstrumentDraft): Instrument => ({
+export type InstrumentRiskMetadata = {
+  readonly riskLabel: RiskLabel;
+  readonly riskTone: RiskTone;
+  readonly volatilityPercent: number | null;
+  readonly riskUpdatedAt: string;
+  readonly riskSource: string;
+};
+
+const normalizeDraft = (draft: InstrumentDraft, risk: InstrumentRiskMetadata | null = null): Instrument => ({
   name: draft.name.trim(),
   symbol: normalizeSymbol(draft.symbol),
   country: draft.country,
   currency: draft.currency,
   category: draft.category,
+  ...(risk === null ? {} : { riskLabel: risk.riskLabel }),
+  ...(risk === null ? {} : { riskTone: risk.riskTone }),
+  ...(risk?.volatilityPercent === null || risk === null ? {} : { volatilityPercent: risk.volatilityPercent }),
+  ...(risk === null ? {} : { riskUpdatedAt: risk.riskUpdatedAt }),
+  ...(risk === null ? {} : { riskSource: risk.riskSource }),
 });
 
 export const hasInstrumentSymbol = (
@@ -26,24 +39,27 @@ export const hasInstrumentSymbol = (
 export const addInstrument = (
   instruments: readonly Instrument[],
   draft: InstrumentDraft,
-): readonly Instrument[] => [...instruments, normalizeDraft(draft)];
+  risk: InstrumentRiskMetadata | null = null,
+): readonly Instrument[] => [...instruments, normalizeDraft(draft, risk)];
 
 export const updateInstrument = (
   instruments: readonly Instrument[],
   currentSymbol: SymbolCode,
   draft: InstrumentDraft,
+  risk: InstrumentRiskMetadata | null = null,
 ): readonly Instrument[] =>
-  instruments.map((instrument) => (instrument.symbol === currentSymbol ? normalizeDraft(draft) : instrument));
+  instruments.map((instrument) => (instrument.symbol === currentSymbol ? normalizeDraft(draft, risk) : instrument));
 
 export const updatePortfolioInstrument = (
   state: PortfolioState,
   currentSymbol: SymbolCode,
   draft: InstrumentDraft,
+  risk: InstrumentRiskMetadata | null = null,
 ): PortfolioState => {
-  const instrument = normalizeDraft(draft);
+  const instrument = normalizeDraft(draft, risk);
   return {
     ...state,
-    instruments: updateInstrument(state.instruments, currentSymbol, draft),
+    instruments: updateInstrument(state.instruments, currentSymbol, draft, risk),
     targets: state.targets.map((target) =>
       target.symbol === currentSymbol
         ? {

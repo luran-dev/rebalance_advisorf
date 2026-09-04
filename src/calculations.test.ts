@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildAccountSnapshot, summarizeAssets } from "./calculations";
-import { cashPositions, holdings, targetAssets } from "./data";
+import { buildAccountSnapshot, summarizeAssets, summarizeRisks } from "./calculations";
+import { cashPositions, holdings, instruments, targetAssets } from "./data";
 
 describe("buildAccountSnapshot", () => {
   it("calculates buy and sell guidance when holdings drift from targets", () => {
@@ -71,6 +71,25 @@ describe("summarizeAssets", () => {
     const cash = summary.find((item) => item.assetClass === "현금");
 
     expect(cash?.marketValue).toBe(45766144);
+    expect(summary.reduce((total, item) => total + item.percent, 0)).toBeCloseTo(100);
+  });
+});
+
+describe("summarizeRisks", () => {
+  it("groups holding market values by instrument risk labels", () => {
+    const snapshot = buildAccountSnapshot(holdings, targetAssets, cashPositions, "global-shinhan");
+    const riskedInstruments = instruments.map((instrument) =>
+      instrument.symbol === "QQQ"
+        ? { ...instrument, riskLabel: "높음" as const, riskTone: "loss" as const }
+        : instrument.symbol === "IAU"
+          ? { ...instrument, riskLabel: "낮음" as const, riskTone: "gain" as const }
+          : instrument,
+    );
+
+    const summary = summarizeRisks(snapshot.rows, riskedInstruments);
+
+    expect(summary.find((item) => item.riskLabel === "높음")?.marketValue).toBeCloseTo(709.24 * 1279);
+    expect(summary.find((item) => item.riskLabel === "낮음")?.marketValue).toBeCloseTo(82.55 * 5 * 1279);
     expect(summary.reduce((total, item) => total + item.percent, 0)).toBeCloseTo(100);
   });
 });

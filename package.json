@@ -7,6 +7,10 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 127.0.0.1",
+    "app:start": "scripts/rebalance-advisor.sh start",
+    "app:stop": "scripts/rebalance-advisor.sh stop",
+    "app:restart": "scripts/rebalance-advisor.sh restart",
+    "app:status": "scripts/rebalance-advisor.sh status",
     "test": "vitest run"
   },
   "dependencies": {

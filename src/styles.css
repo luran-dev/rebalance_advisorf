@@ -454,6 +454,50 @@ select:focus-visible {
   border-radius: 3px;
 }
 
+.risk-distribution {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0 var(--space-6) var(--space-6);
+}
+
+.risk-distribution-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-block-start: var(--space-4);
+  border-block-start: 1px solid var(--border-default);
+}
+
+.risk-distribution-heading h3 {
+  margin: var(--space-1) 0 0;
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.risk-stack {
+  min-block-size: 18px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: var(--surface-subtle);
+}
+
+.risk-legend .legend-row {
+  grid-template-columns: 12px minmax(0, 1fr) auto auto;
+}
+
+.risk-legend small {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.risk-empty {
+  padding: 0;
+  border: 0;
+}
+
 .table-scroll {
   inline-size: 100%;
   max-inline-size: 100%;
@@ -1062,7 +1106,8 @@ select:hover {
   gap: var(--space-2);
 }
 
-.instrument-tags span {
+.instrument-tags span,
+.risk-badge {
   padding: var(--space-1) var(--space-2);
   border: 1px solid var(--border-default);
   border-radius: 999px;
@@ -1071,6 +1116,35 @@ select:hover {
   font-size: 12px;
   font-weight: 800;
   white-space: nowrap;
+}
+
+.risk-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.risk-badge-neutral {
+  background: var(--surface-panel);
+  color: var(--text-secondary);
+}
+
+.risk-badge-gain {
+  border-color: color-mix(in srgb, var(--signal-good) 34%, var(--border-default));
+  background: color-mix(in srgb, var(--signal-good) 12%, var(--surface-panel));
+  color: var(--signal-good);
+}
+
+.risk-badge-warning {
+  border-color: color-mix(in srgb, var(--signal-warn) 34%, var(--border-default));
+  background: color-mix(in srgb, var(--signal-warn) 12%, var(--surface-panel));
+  color: var(--signal-warn);
+}
+
+.risk-badge-loss {
+  border-color: color-mix(in srgb, var(--signal-sell) 34%, var(--border-default));
+  background: color-mix(in srgb, var(--signal-sell) 12%, var(--surface-panel));
+  color: var(--signal-sell);
 }
 
 .row-actions {

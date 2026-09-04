@@ -24,11 +24,16 @@ export function TargetAllocationRows({
         const rowCategory = instrument?.category ?? row.assetClass;
         const accountName = accounts.find((account) => account.id === row.accountId)?.name ?? row.accountId;
         const currency = instrument?.currency ?? "KRW";
+        const riskTone = instrument?.riskTone ?? "neutral";
+        const riskLabel = instrument?.riskLabel ?? "미계산";
 
         return (
           <tr key={`${row.accountId}-${row.symbol}`}>
             <td>{accountName}</td>
             <td>{rowCategory}</td>
+            <td>
+              <span className={`risk-badge risk-badge-${riskTone}`}>{riskLabel}</span>
+            </td>
             <td className="ticker">{row.symbol}</td>
             <td>
               <button

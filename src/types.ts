@@ -4,6 +4,8 @@ export type SymbolCode = string;
 export type Currency = "KRW" | "USD";
 export type TradeDirection = "buy" | "sell" | "hold";
 export type ExchangeRates = Readonly<Record<Currency, number>>;
+export type RiskLabel = "데이터 부족" | "낮음" | "보통" | "높음";
+export type RiskTone = "neutral" | "gain" | "loss" | "warning";
 
 export const countryOptions = ["한국", "미국"] as const;
 
@@ -48,6 +50,11 @@ export type Instrument = {
   readonly country: Country;
   readonly currency: Currency;
   readonly category: InstrumentCategory;
+  readonly riskLabel?: RiskLabel;
+  readonly riskTone?: RiskTone;
+  readonly volatilityPercent?: number;
+  readonly riskUpdatedAt?: string;
+  readonly riskSource?: string;
   readonly price?: number;
   readonly priceUpdatedAt?: string;
   readonly priceSource?: string;
@@ -195,5 +202,12 @@ export type AssetSummary = {
   readonly investedValue: number;
   readonly marketValue: number;
   readonly returnPercent: number;
+  readonly percent: number;
+};
+
+export type RiskSummary = {
+  readonly riskLabel: RiskLabel | "미계산";
+  readonly riskTone: RiskTone;
+  readonly marketValue: number;
   readonly percent: number;
 };

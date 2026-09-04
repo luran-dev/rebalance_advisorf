@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildMarketAnalysis } from "./marketAnalysis";
+import { buildMarketAnalysis, buildMarketRisk } from "./marketAnalysis";
 import type { MarketDetailSubject, MarketHistoryItem } from "./types";
 
 const subject: MarketDetailSubject = {
@@ -24,6 +24,14 @@ const history: readonly MarketHistoryItem[] = [
 ];
 
 describe("buildMarketAnalysis", () => {
+  it("Given market history When risk is built Then it uses the detail dialog volatility thresholds", () => {
+    const risk = buildMarketRisk(history);
+
+    expect(risk.riskLabel).toBe("높음");
+    expect(risk.riskTone).toBe("loss");
+    expect(risk.volatilityPercent).toBeGreaterThan(30);
+  });
+
   it("Given volatile overweight profitable holding When analysis is built Then risk and comments reflect the position", () => {
     const analysis = buildMarketAnalysis(subject, history);
 

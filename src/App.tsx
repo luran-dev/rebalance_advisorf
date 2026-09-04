@@ -7,7 +7,7 @@ import {
   type CashPositionUpdate,
   type PortfolioState,
 } from "./accountState";
-import { buildAccountSnapshot, summarizeAssets } from "./calculations";
+import { buildAccountSnapshot, summarizeAssets, summarizeRisks } from "./calculations";
 import { AccountManager } from "./components/AccountManager";
 import { AllocationDonut } from "./components/AllocationDonut";
 import { AppShellNav, type AppView, type PortfolioView } from "./components/AppShellNav";
@@ -22,21 +22,12 @@ import { portfolioSeed } from "./data";
 import { formatKrw, formatPercent } from "./format";
 import { addHolding, deleteHolding, updateHolding, type HoldingSelection, type HoldingUpdate } from "./holdingState";
 import { addInstrument, deleteInstrument, updatePortfolioInstrument } from "./instrumentState";
+import { resolveInstrumentRisk } from "./instrumentRisk";
 import { enrichMarketDetailSubject } from "./marketDetailSubject";
 import { clearPortfolioState, loadPortfolioState, savePortfolioState } from "./portfolioBackup";
 import { addTargetAllocation, deleteTargetAllocation, updateTargetAllocation } from "./targetAllocationState";
 import { usePortfolioRefresh } from "./usePortfolioRefresh";
-import type {
-  AccountDraft,
-  AccountId,
-  HoldingKey,
-  Instrument,
-  InstrumentDraft,
-  MarketDetailSubject,
-  SymbolCode,
-  TargetAllocationDraft,
-  TargetAllocationKey,
-} from "./types";
+import type { AccountDraft, AccountId, HoldingKey, Instrument, InstrumentDraft, MarketDetailSubject, SymbolCode, TargetAllocationDraft, TargetAllocationKey } from "./types";
 
 export function App() {
   const [activeView, setActiveView] = useState<AppView>("all");
@@ -72,6 +63,7 @@ export function App() {
     [activeAccount, exchangeRates, portfolio],
   );
   const summary = useMemo(() => summarizeAssets(snapshot.rows, snapshot.cashValue), [snapshot]);
+  const riskSummary = useMemo(() => summarizeRisks(snapshot.rows, portfolio.instruments), [portfolio.instruments, snapshot.rows]);
   const selectedName = activeAccount === "all" ? "전체 포트폴리오" : portfolio.accounts.find((account) => account.id === activeAccount)?.name ?? activeAccount;
   const driftCount = snapshot.rows.filter((row) => row.direction !== "hold").length;
   const addManagedAccount = (draft: AccountDraft) => setPortfolio((current) => addAccount(current, draft));
@@ -82,9 +74,13 @@ export function App() {
     setActiveView((current) => (current === accountId ? "all" : current));
   };
   const addManagedInstrument = (draft: InstrumentDraft) =>
-    setPortfolio((current) => ({ ...current, instruments: addInstrument(current.instruments, draft) }));
+    resolveInstrumentRisk(draft.symbol).then((risk) =>
+      setPortfolio((current) => ({ ...current, instruments: addInstrument(current.instruments, draft, risk) })),
+    );
   const updateManagedInstrument = (symbol: SymbolCode, draft: InstrumentDraft) =>
-    setPortfolio((current) => updatePortfolioInstrument(current, symbol, draft));
+    resolveInstrumentRisk(draft.symbol).then((risk) =>
+      setPortfolio((current) => updatePortfolioInstrument(current, symbol, draft, risk)),
+    );
   const deleteManagedInstrument = (symbol: SymbolCode) =>
     setPortfolio((current) => ({ ...current, instruments: deleteInstrument(current.instruments, symbol) }));
   const addManagedTargetAllocation = (draft: TargetAllocationDraft, instrument: Instrument) =>
@@ -204,7 +200,7 @@ export function App() {
             <ResizableAnalysisGrid
               allocationPercent={allocationPanelPercent}
               onAllocationPercentChange={setAllocationPanelPercent}
-              allocationPanel={<AllocationDonut summary={summary} />}
+              allocationPanel={<AllocationDonut summary={summary} riskSummary={riskSummary} />}
               strategyPanel={
                 <StrategyTable
                   accounts={portfolio.accounts}

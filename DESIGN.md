@@ -108,6 +108,15 @@ All spacing derives from 4px.
 - **Motion**: none.
 - **Layout**: intrinsic grid.
 
+### Allocation Donut
+- **Structure**: asset allocation donut, allocation legend, and a risk distribution bar beneath the donut area.
+- **Variants**: asset-class summary, risk summary, empty risk summary.
+- **Spacing**: --space-3 to --space-6.
+- **States**: static, no-holding empty state.
+- **Accessibility**: the risk distribution has a labeled region and text legend so risk is not color-only.
+- **Motion**: none.
+- **Layout**: risk distribution sits below the portfolio pie chart and uses the same bounded panel width.
+
 ### Dense Data Table
 - **Structure**: caption, sticky header, grouped body, numeric alignment.
 - **Variants**: strategy targets, holdings, asset classes, sortable weight and valuation columns.
@@ -118,11 +127,11 @@ All spacing derives from 4px.
 - **Layout**: horizontal reel inside bounded panel.
 
 ### Target Allocation Manager
-- **Structure**: strategy table with an explicit add command; account-bound modal editor, searchable instrument-code and instrument-name dropdowns, read-only asset class, suitability select, percent input with `%` suffix, running account total, target table actions.
+- **Structure**: strategy table with an explicit add command; account-bound modal editor, searchable instrument-code and instrument-name dropdowns, read-only asset class, instrument risk badge, suitability select, percent input with `%` suffix, running account total, target table actions.
 - **Variants**: all-portfolio read/edit view, account-specific add modal, edit modal, duplicate symbol blocked state, unregistered symbol blocked state.
 - **Spacing**: --space-3 and --space-5.
 - **States**: default, focus, disabled, read-only, editing, validation feedback.
-- **Accessibility**: visible Korean labels for 계좌, 종목코드, 종목명, 자산군, 적합성, 목표비율; running total uses live text.
+- **Accessibility**: visible Korean labels for 계좌, 자산군, 위험도, 종목코드, 종목명, 적합성, 목표비율; risk is displayed as text, not color alone, and running total uses live text.
 - **Motion**: 120ms control feedback only.
 - **Layout**: the strategy panel is primarily a table; editing appears only in a centered modal so occasional edits do not consume the everyday dashboard view. On compact viewports, target allocation dialogs use a two-column form so the save action remains visible even when the target table is empty.
 
@@ -181,11 +190,11 @@ All spacing derives from 4px.
 - **Layout**: standalone metadata view; table-like account list with occasional editing handled in a centered modal. It is never embedded in the portfolio analysis/dashboard panel.
 
 ### Instrument Manager
-- **Structure**: separate metadata screen header, instrument rows, add command, country/currency/category badges, icon-only edit/delete commands, modal instrument editor.
-- **Variants**: add dialog, edit dialog, duplicate-code blocked state.
+- **Structure**: separate metadata screen header, instrument rows, add command, country/currency/category/risk badges, icon-only edit/delete commands, modal instrument editor.
+- **Variants**: add dialog, edit dialog, duplicate-code blocked state, risk loading state, unavailable market-history state.
 - **Spacing**: --space-3 and --space-4.
 - **States**: default, hover, active, focus, disabled, editing, validation feedback.
-- **Accessibility**: 종목명, 종목코드, 거래통화, 국가, 종류 all use visible labels in the dialog; icon-only edit/delete buttons use explicit accessible names.
+- **Accessibility**: 종목명, 종목코드, 거래통화, 국가, 종류 all use visible labels in the dialog; risk is displayed as text, not color alone; icon-only edit/delete buttons use explicit accessible names.
 - **Motion**: 120ms press feedback.
 - **Layout**: standalone metadata view alongside account metadata; frequent scanning stays in the list and occasional editing opens in a centered viewport-level modal that is independent of the metadata list scroll length.
 

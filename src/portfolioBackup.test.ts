@@ -4,7 +4,20 @@ import type { PortfolioState } from "./accountState";
 
 const state: PortfolioState = {
   accounts: [{ id: "global-shinhan", name: "종합계좌", broker: "신한" }],
-  instruments: [{ name: "Invesco QQQ Trust", symbol: "QQQ", country: "미국", currency: "USD", category: "해외 ETF" }],
+  instruments: [
+    {
+      name: "Invesco QQQ Trust",
+      symbol: "QQQ",
+      country: "미국",
+      currency: "USD",
+      category: "해외 ETF",
+      riskLabel: "높음",
+      riskTone: "loss",
+      volatilityPercent: 31.2,
+      riskUpdatedAt: "2026-09-04",
+      riskSource: "Nasdaq ETF",
+    },
+  ],
   targets: [
     {
       accountId: "global-shinhan",

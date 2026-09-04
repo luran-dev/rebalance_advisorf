@@ -5,6 +5,9 @@ import type {
   ExchangeRates,
   Holding,
   HoldingRow,
+  Instrument,
+  RiskLabel,
+  RiskSummary,
   SymbolCode,
   TargetAsset,
   TradeDirection,
@@ -153,4 +156,36 @@ export const summarizeAssets = (rows: readonly HoldingRow[], cashValue: number):
       percent: total === 0 ? 0 : (item.marketValue / total) * 100,
     }))
     .sort((a, b) => b.marketValue - a.marketValue);
+};
+
+const riskOrder: readonly (RiskLabel | "미계산")[] = ["높음", "보통", "낮음", "데이터 부족", "미계산"];
+
+export const summarizeRisks = (
+  rows: readonly HoldingRow[],
+  instruments: readonly Instrument[],
+): readonly RiskSummary[] => {
+  const instrumentsBySymbol = new Map(instruments.map((instrument) => [instrument.symbol, instrument]));
+  const grouped = new Map<RiskLabel | "미계산", Omit<RiskSummary, "percent">>();
+
+  for (const row of rows) {
+    const instrument = instrumentsBySymbol.get(row.symbol);
+    const riskLabel = instrument?.riskLabel ?? "미계산";
+    const riskTone = instrument?.riskTone ?? "neutral";
+    const existing = grouped.get(riskLabel);
+    grouped.set(riskLabel, {
+      riskLabel,
+      riskTone,
+      marketValue: (existing?.marketValue ?? 0) + row.marketValue,
+    });
+  }
+
+  const total = Array.from(grouped.values()).reduce((sum, item) => sum + item.marketValue, 0);
+
+  return riskOrder
+    .map((riskLabel) => grouped.get(riskLabel))
+    .filter((item): item is Omit<RiskSummary, "percent"> => item !== undefined)
+    .map((item) => ({
+      ...item,
+      percent: total === 0 ? 0 : (item.marketValue / total) * 100,
+    }));
 };
