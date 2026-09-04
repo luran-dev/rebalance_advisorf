@@ -852,7 +852,7 @@ select:hover {
   display: flex;
   flex-wrap: wrap;
   justify-content: end;
-  gap: var(--space-2);
+  gap: var(--space-1);
 }
 
 .icon-command.danger {
@@ -864,10 +864,17 @@ select:hover {
   background: color-mix(in srgb, var(--signal-sell) 12%, transparent);
 }
 
+.icon-command.icon-only {
+  inline-size: 32px;
+  min-inline-size: 32px;
+  min-block-size: 32px;
+  padding: 0;
+}
+
 .table-actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
+  flex-wrap: nowrap;
+  gap: var(--space-1);
 }
 
 .modal-backdrop {
@@ -917,12 +924,26 @@ select:hover {
   text-overflow: ellipsis;
 }
 
+.table-panel th:nth-child(7),
+.table-panel td:nth-child(7) {
+  min-inline-size: 76px;
+}
+
 .holdings-panel th:nth-child(2),
 .holdings-panel td:nth-child(2) {
   min-inline-size: 240px;
   max-inline-size: 360px;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.holdings-panel table {
+  min-inline-size: 1260px;
+}
+
+.holdings-panel th:nth-child(15),
+.holdings-panel td:nth-child(15) {
+  min-inline-size: 76px;
 }
 
 @media (max-width: 1024px) {

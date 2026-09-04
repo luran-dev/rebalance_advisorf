@@ -12,6 +12,16 @@ describe("buildAccountSnapshot", () => {
     expect(bondRow?.direction).toBe("buy");
     expect(snapshot.marketValue).toBeGreaterThan(snapshot.investedValue);
   });
+
+  it("uses supplied exchange rates for USD holdings", () => {
+    const snapshot = buildAccountSnapshot(holdings, targetAssets, cashPositions, "global-shinhan", {
+      KRW: 1,
+      USD: 1400,
+    });
+    const qqq = snapshot.rows.find((row) => row.symbol === "QQQ");
+
+    expect(qqq?.marketValue).toBeCloseTo(709.24 * 1400);
+  });
 });
 
 describe("summarizeAssets", () => {

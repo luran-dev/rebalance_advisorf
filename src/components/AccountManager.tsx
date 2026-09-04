@@ -1,11 +1,7 @@
-import { Pencil, Plus, Trash2, X } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { Account, AccountDraft, AccountId } from "../types";
-
-const emptyDraft: AccountDraft = {
-  name: "",
-  broker: "",
-};
+import { AccountDialog, type AccountDialogState } from "./AccountDialog";
 
 export function AccountManager({
   accounts,
@@ -20,23 +16,7 @@ export function AccountManager({
   readonly onUpdateAccount: (accountId: AccountId, draft: AccountDraft) => void;
   readonly onDeleteAccount: (accountId: AccountId) => void;
 }) {
-  const [draft, setDraft] = useState<AccountDraft>(emptyDraft);
-  const [editingAccountId, setEditingAccountId] = useState<AccountId | null>(null);
-  const isEditing = editingAccountId !== null;
-  const canSubmit = draft.name.trim().length > 0 && draft.broker.trim().length > 0;
-
-  const submit = () => {
-    if (!canSubmit) {
-      return;
-    }
-    if (editingAccountId === null) {
-      onAddAccount({ name: draft.name.trim(), broker: draft.broker.trim() });
-    } else {
-      onUpdateAccount(editingAccountId, { name: draft.name.trim(), broker: draft.broker.trim() });
-    }
-    setDraft(emptyDraft);
-    setEditingAccountId(null);
-  };
+  const [dialogState, setDialogState] = useState<AccountDialogState | null>(null);
 
   return (
     <section className="panel account-manager">
@@ -45,43 +25,12 @@ export function AccountManager({
           <p className="eyebrow">계좌 관리</p>
           <h2>계좌 추가/수정/삭제</h2>
         </div>
-        <Plus size={22} aria-hidden="true" />
+        <button className="command command-primary" type="button" onClick={() => setDialogState({ kind: "add" })}>
+          <Plus size={16} aria-hidden="true" />
+          새 계좌 추가
+        </button>
       </div>
       <div className="account-manager-body">
-        <div className="account-form" aria-label="계좌 입력">
-          <label>
-            계좌 이름
-            <input
-              type="text"
-              value={draft.name}
-              onChange={(event) => setDraft({ ...draft, name: event.currentTarget.value })}
-            />
-          </label>
-          <label>
-            증권사
-            <input
-              type="text"
-              value={draft.broker}
-              onChange={(event) => setDraft({ ...draft, broker: event.currentTarget.value })}
-            />
-          </label>
-          <button className="command command-primary" type="button" disabled={!canSubmit} onClick={submit}>
-            {isEditing ? <Pencil size={16} aria-hidden="true" /> : <Plus size={16} aria-hidden="true" />}
-            {isEditing ? "저장" : "추가"}
-          </button>
-          <button
-            className="command command-ghost"
-            type="button"
-            disabled={!isEditing}
-            onClick={() => {
-              setDraft(emptyDraft);
-              setEditingAccountId(null);
-            }}
-          >
-            <X size={16} aria-hidden="true" />
-            취소
-          </button>
-        </div>
         <div className="account-list" aria-label="등록된 계좌">
           {accounts.map((account) => (
             <article className={activeAccount === account.id ? "account-row selected" : "account-row"} key={account.id}>
@@ -91,35 +40,36 @@ export function AccountManager({
               </div>
               <div className="row-actions">
                 <button
-                  className="icon-command"
+                  className="icon-command icon-only"
                   type="button"
-                  onClick={() => {
-                    setDraft({ name: account.name, broker: account.broker });
-                    setEditingAccountId(account.id);
-                  }}
+                  onClick={() => setDialogState({ kind: "edit", account })}
+                  aria-label={`${account.name} 계좌 수정`}
+                  title="수정"
                 >
                   <Pencil size={16} aria-hidden="true" />
-                  수정
                 </button>
                 <button
-                  className="icon-command danger"
+                  className="icon-command icon-only danger"
                   type="button"
-                  onClick={() => {
-                    onDeleteAccount(account.id);
-                    if (editingAccountId === account.id) {
-                      setDraft(emptyDraft);
-                      setEditingAccountId(null);
-                    }
-                  }}
+                  onClick={() => onDeleteAccount(account.id)}
+                  aria-label={`${account.name} 계좌 삭제`}
+                  title="삭제"
                 >
                   <Trash2 size={16} aria-hidden="true" />
-                  삭제
                 </button>
               </div>
             </article>
           ))}
         </div>
       </div>
+      {dialogState !== null ? (
+        <AccountDialog
+          state={dialogState}
+          onClose={() => setDialogState(null)}
+          onAddAccount={onAddAccount}
+          onUpdateAccount={onUpdateAccount}
+        />
+      ) : null}
     </section>
   );
 }

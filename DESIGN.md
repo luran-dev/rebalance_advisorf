@@ -153,23 +153,32 @@ All spacing derives from 4px.
 - **Motion**: 120ms press feedback.
 - **Layout**: cluster with wrapping.
 
+### Holding Manager
+- **Structure**: current holdings table with price refresh, FX refresh, add/edit/delete commands; account-bound modal editor, target-allocation-backed symbol and name search, read-only KRW/USD currency, current price, quantity, and average price inputs.
+- **Variants**: all-portfolio read/edit view, account-specific add modal, edit modal, refreshing prices, refreshing FX rates, duplicate holding blocked state, target-missing blocked state.
+- **Spacing**: --space-3 and --space-5.
+- **States**: default, focus, disabled, editing, validation feedback.
+- **Accessibility**: account, symbol, name, currency, current price, quantity, and average price use visible Korean labels; buy/sell/hold guidance remains text-based.
+- **Motion**: 120ms control feedback only.
+- **Layout**: adding holdings is account-specific; all-portfolio view can edit existing rows but adds new rows only after the user chooses an account view; current price and FX refresh actions are panel-scoped and keep status text below the panel heading.
+
 ### Account Manager
-- **Structure**: separate metadata screen header, compact account form, account rows, edit/delete commands.
-- **Variants**: add mode, edit mode, empty account.
+- **Structure**: separate metadata screen header, account rows, add command, icon-only edit/delete commands, modal account editor.
+- **Variants**: add dialog, edit dialog, empty account.
 - **Spacing**: --space-3 and --space-4.
 - **States**: default, hover, active, focus, disabled, editing.
-- **Accessibility**: every input has a visible label; edit/delete buttons include text and icons.
+- **Accessibility**: every input has a visible label in the dialog; icon-only edit/delete buttons use explicit accessible names.
 - **Motion**: 120ms press feedback.
-- **Layout**: standalone metadata view; intrinsic grid for form fields, table-like account list below. It is never embedded in the portfolio analysis/dashboard panel.
+- **Layout**: standalone metadata view; table-like account list with occasional editing handled in a centered modal. It is never embedded in the portfolio analysis/dashboard panel.
 
 ### Instrument Manager
-- **Structure**: separate metadata screen header, compact instrument form, instrument rows, currency/category badges, edit/delete commands.
-- **Variants**: add mode, edit mode, duplicate-code blocked state.
+- **Structure**: separate metadata screen header, instrument rows, add command, country/currency/category badges, icon-only edit/delete commands, modal instrument editor.
+- **Variants**: add dialog, edit dialog, duplicate-code blocked state.
 - **Spacing**: --space-3 and --space-4.
 - **States**: default, hover, active, focus, disabled, editing, validation feedback.
-- **Accessibility**: 종목명, 종목코드, 거래통화, 종류 all use visible labels; edit/delete buttons include text and icons.
+- **Accessibility**: 종목명, 종목코드, 거래통화, 국가, 종류 all use visible labels in the dialog; icon-only edit/delete buttons use explicit accessible names.
 - **Motion**: 120ms press feedback.
-- **Layout**: standalone metadata view alongside account metadata; never embedded in the portfolio analysis/dashboard panel.
+- **Layout**: standalone metadata view alongside account metadata; frequent scanning stays in the list and occasional editing opens in a centered modal.
 
 ## 6. Motion & Interaction
 

@@ -11,6 +11,7 @@ import type { Instrument, TargetAsset } from "./types";
 const qqq: Instrument = {
   name: "Invesco QQQ Trust",
   symbol: "QQQ",
+  country: "미국",
   currency: "USD",
   category: "해외 ETF",
 };

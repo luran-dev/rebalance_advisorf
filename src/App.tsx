@@ -11,9 +11,20 @@ import { ResizableAnalysisGrid } from "./components/ResizableAnalysisGrid";
 import { StrategyTable } from "./components/StrategyTable";
 import { accounts, cashPositions, holdings, instruments, targetAssets } from "./data";
 import { formatKrw, formatPercent } from "./format";
+import { addHolding, deleteHolding, updateHolding, type HoldingSelection, type HoldingUpdate } from "./holdingState";
 import { addInstrument, deleteInstrument, updateInstrument } from "./instrumentState";
 import { addTargetAllocation, deleteTargetAllocation, updateTargetAllocation } from "./targetAllocationState";
-import type { AccountDraft, AccountId, Instrument, InstrumentDraft, SymbolCode, TargetAllocationDraft, TargetAllocationKey } from "./types";
+import { usePortfolioRefresh } from "./usePortfolioRefresh";
+import type {
+  AccountDraft,
+  AccountId,
+  HoldingKey,
+  Instrument,
+  InstrumentDraft,
+  SymbolCode,
+  TargetAllocationDraft,
+  TargetAllocationKey,
+} from "./types";
 
 export function App() {
   const [activeView, setActiveView] = useState<AppView>("all");
@@ -25,6 +36,8 @@ export function App() {
     cashPositions,
   });
   const [allocationPanelPercent, setAllocationPanelPercent] = useState(38);
+  const { exchangeRates, priceRefresh, fxRefresh, refreshVisibleHoldingPrices, refreshExchangeRates } =
+    usePortfolioRefresh({ portfolio, setPortfolio });
   const activeAccount: PortfolioView = activeView === "accounts" || activeView === "instruments" ? "all" : activeView;
   const snapshot = useMemo(
     () =>
@@ -33,8 +46,9 @@ export function App() {
         portfolio.targets,
         portfolio.cashPositions,
         activeAccount === "all" ? undefined : activeAccount,
+        exchangeRates,
       ),
-    [activeAccount, portfolio],
+    [activeAccount, exchangeRates, portfolio],
   );
   const summary = useMemo(() => summarizeAssets(snapshot.rows, snapshot.cashValue), [snapshot]);
   const selectedName = activeAccount === "all" ? "전체 포트폴리오" : portfolio.accounts.find((account) => account.id === activeAccount)?.name ?? activeAccount;
@@ -65,6 +79,24 @@ export function App() {
     }));
   const deleteManagedTargetAllocation = (key: TargetAllocationKey) =>
     setPortfolio((current) => ({ ...current, targets: deleteTargetAllocation(current.targets, key) }));
+  const addManagedHolding = (holding: HoldingSelection) =>
+    setPortfolio((current) => ({
+      ...current,
+      holdings: addHolding(current.holdings, holding),
+    }));
+  const updateManagedHolding = (holding: HoldingUpdate) =>
+    setPortfolio((current) => ({
+      ...current,
+      holdings: updateHolding({
+        holdings: current.holdings,
+        currentKey: holding.key,
+        draft: holding.draft,
+        target: holding.target,
+        instrument: holding.instrument,
+      }),
+    }));
+  const deleteManagedHolding = (key: HoldingKey) =>
+    setPortfolio((current) => ({ ...current, holdings: deleteHolding(current.holdings, key) }));
 
   return (
     <div className="app-shell">
@@ -134,7 +166,22 @@ export function App() {
                 />
               }
             />
-            <HoldingsTable accounts={portfolio.accounts} rows={snapshot.rows} />
+            <HoldingsTable
+              accounts={portfolio.accounts}
+              activeAccount={activeAccount}
+              rows={snapshot.rows}
+              instruments={portfolio.instruments}
+              targets={portfolio.targets}
+              isRefreshingPrices={priceRefresh.isRunning}
+              priceRefreshStatus={priceRefresh.message}
+              isRefreshingFx={fxRefresh.isRunning}
+              fxRefreshStatus={fxRefresh.message}
+              onRefreshPrices={refreshVisibleHoldingPrices}
+              onRefreshFx={refreshExchangeRates}
+              onAddHolding={addManagedHolding}
+              onUpdateHolding={updateManagedHolding}
+              onDeleteHolding={deleteManagedHolding}
+            />
           </>
         )}
       </main>

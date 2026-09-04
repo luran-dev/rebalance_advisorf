@@ -1,10 +1,11 @@
-import type { Instrument, InstrumentDraft, SymbolCode } from "./types";
+import type { FxQuote, Instrument, InstrumentDraft, MarketQuote, SymbolCode } from "./types";
 
 const normalizeSymbol = (symbol: string): SymbolCode => symbol.trim().toUpperCase();
 
 const normalizeDraft = (draft: InstrumentDraft): Instrument => ({
   name: draft.name.trim(),
   symbol: normalizeSymbol(draft.symbol),
+  country: draft.country,
   currency: draft.currency,
   category: draft.category,
 });
@@ -37,3 +38,34 @@ export const deleteInstrument = (
   instruments: readonly Instrument[],
   symbol: SymbolCode,
 ): readonly Instrument[] => instruments.filter((instrument) => instrument.symbol !== symbol);
+
+export const updateInstrumentPrice = (
+  instruments: readonly Instrument[],
+  quote: MarketQuote,
+): readonly Instrument[] =>
+  instruments.map((instrument) =>
+    instrument.symbol === quote.symbol
+      ? {
+          ...instrument,
+          currency: quote.currency,
+          price: quote.price,
+          priceUpdatedAt: quote.updatedAt,
+          priceSource: quote.source,
+        }
+      : instrument,
+  );
+
+export const updateInstrumentFx = (
+  instruments: readonly Instrument[],
+  quote: FxQuote,
+): readonly Instrument[] =>
+  instruments.map((instrument) =>
+    instrument.currency === quote.currency
+      ? {
+          ...instrument,
+          fxRate: quote.rate,
+          fxUpdatedAt: quote.date,
+          fxSource: quote.source,
+        }
+      : instrument,
+  );

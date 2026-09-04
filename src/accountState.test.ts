@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addAccount, deleteAccount, updateAccount, type PortfolioState } from "./accountState";
+import { addAccount, deleteAccount, updateAccount, updateAccountsDefaultFx, type PortfolioState } from "./accountState";
 import { accounts, cashPositions, holdings, instruments, targetAssets } from "./data";
 
 const baseState: PortfolioState = {
@@ -35,5 +35,11 @@ describe("account state management", () => {
     expect(next.targets.some((target) => target.accountId === "irp-future")).toBe(false);
     expect(next.holdings.some((holding) => holding.accountId === "irp-future")).toBe(false);
     expect(next.cashPositions.some((cash) => cash.accountId === "irp-future")).toBe(false);
+  });
+
+  it("stores default fx on accounts when a foreign currency is refreshed", () => {
+    const next = updateAccountsDefaultFx(accounts, "USD", 1362.5583);
+
+    expect(next.every((account) => account.defaultFx === 1362.5583)).toBe(true);
   });
 });

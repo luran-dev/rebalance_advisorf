@@ -1,4 +1,4 @@
-import type { Account, AccountDraft, AccountId, CashPosition, Holding, Instrument, TargetAsset } from "./types";
+import type { Account, AccountDraft, AccountId, CashPosition, Currency, Holding, Instrument, TargetAsset } from "./types";
 
 export type PortfolioState = {
   readonly accounts: readonly Account[];
@@ -43,3 +43,10 @@ export const deleteAccount = (state: PortfolioState, accountId: AccountId): Port
   holdings: state.holdings.filter((holding) => holding.accountId !== accountId),
   cashPositions: state.cashPositions.filter((cash) => cash.accountId !== accountId),
 });
+
+export const updateAccountsDefaultFx = (
+  accounts: readonly Account[],
+  currency: Currency,
+  rate: number,
+): readonly Account[] =>
+  currency === "KRW" ? accounts : accounts.map((account) => ({ ...account, defaultFx: rate }));

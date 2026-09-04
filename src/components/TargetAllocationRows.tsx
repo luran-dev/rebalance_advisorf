@@ -31,17 +31,23 @@ export function TargetAllocationRows({
             <td>{row.targetPercent.toFixed(1)}%</td>
             <td>
               <div className="table-actions">
-                <button className="icon-command" type="button" onClick={() => onEditTarget(row)}>
+                <button
+                  className="icon-command icon-only"
+                  type="button"
+                  onClick={() => onEditTarget(row)}
+                  aria-label={`${rowName} 목표 비중 수정`}
+                  title="수정"
+                >
                   <Pencil size={16} aria-hidden="true" />
-                  수정
                 </button>
                 <button
-                  className="icon-command danger"
+                  className="icon-command icon-only danger"
                   type="button"
                   onClick={() => onDeleteTargetAllocation({ accountId: row.accountId, symbol: row.symbol })}
+                  aria-label={`${rowName} 목표 비중 삭제`}
+                  title="삭제"
                 >
                   <Trash2 size={16} aria-hidden="true" />
-                  삭제
                 </button>
               </div>
             </td>

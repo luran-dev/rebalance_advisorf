@@ -2,6 +2,7 @@ import type {
   AccountId,
   AssetSummary,
   CashPosition,
+  ExchangeRates,
   Holding,
   HoldingRow,
   SymbolCode,
@@ -10,6 +11,10 @@ import type {
 } from "./types";
 
 export const FX_RATE_KRW_PER_USD = 1279;
+export const DEFAULT_EXCHANGE_RATES: ExchangeRates = {
+  KRW: 1,
+  USD: FX_RATE_KRW_PER_USD,
+};
 
 type AccountSnapshot = {
   readonly rows: readonly HoldingRow[];
@@ -19,8 +24,8 @@ type AccountSnapshot = {
   readonly returnPercent: number;
 };
 
-const toKrw = (value: number, currency: "KRW" | "USD") =>
-  currency === "USD" ? value * FX_RATE_KRW_PER_USD : value;
+const toKrw = (value: number, currency: keyof ExchangeRates, exchangeRates: ExchangeRates) =>
+  value * exchangeRates[currency];
 
 const targetKey = (accountId: AccountId, symbol: SymbolCode) => `${accountId}:${symbol}`;
 
@@ -37,16 +42,18 @@ const tradeDirection = (tradeQuantity: number): TradeDirection => {
 export const sumCash = (
   cashPositions: readonly CashPosition[],
   accountId?: AccountId,
+  exchangeRates: ExchangeRates = DEFAULT_EXCHANGE_RATES,
 ): number =>
   cashPositions
     .filter((cash) => accountId === undefined || cash.accountId === accountId)
-    .reduce((total, cash) => total + toKrw(cash.amount, cash.currency), 0);
+    .reduce((total, cash) => total + toKrw(cash.amount, cash.currency, exchangeRates), 0);
 
 export const buildRows = (
   holdings: readonly Holding[],
   targets: readonly TargetAsset[],
   cashPositions: readonly CashPosition[],
   accountId?: AccountId,
+  exchangeRates: ExchangeRates = DEFAULT_EXCHANGE_RATES,
 ): readonly HoldingRow[] => {
   const scopedHoldings = holdings.filter(
     (holding) => accountId === undefined || holding.accountId === accountId,
@@ -56,16 +63,16 @@ export const buildRows = (
   );
   const marketTotal =
     scopedHoldings.reduce(
-      (total, holding) => total + toKrw(holding.currentPrice * holding.quantity, holding.currency),
+      (total, holding) => total + toKrw(holding.currentPrice * holding.quantity, holding.currency, exchangeRates),
       0,
-    ) + sumCash(cashPositions, accountId);
+    ) + sumCash(cashPositions, accountId, exchangeRates);
 
   return scopedHoldings.map((holding) => {
-    const marketValue = toKrw(holding.currentPrice * holding.quantity, holding.currency);
-    const investedValue = toKrw(holding.averagePrice * holding.quantity, holding.currency);
+    const marketValue = toKrw(holding.currentPrice * holding.quantity, holding.currency, exchangeRates);
+    const investedValue = toKrw(holding.averagePrice * holding.quantity, holding.currency, exchangeRates);
     const targetPercent = targetBySymbol.get(targetKey(holding.accountId, holding.symbol)) ?? 0;
     const targetValue = marketTotal * (targetPercent / 100);
-    const targetQuantity = holding.currentPrice > 0 ? targetValue / toKrw(holding.currentPrice, holding.currency) : 0;
+    const targetQuantity = holding.currentPrice > 0 ? targetValue / toKrw(holding.currentPrice, holding.currency, exchangeRates) : 0;
     const tradeQuantity = Math.round(targetQuantity - holding.quantity);
 
     return {
@@ -88,9 +95,10 @@ export const buildAccountSnapshot = (
   targets: readonly TargetAsset[],
   cashPositions: readonly CashPosition[],
   accountId?: AccountId,
+  exchangeRates: ExchangeRates = DEFAULT_EXCHANGE_RATES,
 ): AccountSnapshot => {
-  const rows = buildRows(holdings, targets, cashPositions, accountId);
-  const cashValue = sumCash(cashPositions, accountId);
+  const rows = buildRows(holdings, targets, cashPositions, accountId, exchangeRates);
+  const cashValue = sumCash(cashPositions, accountId, exchangeRates);
   const investedValue = rows.reduce((total, row) => total + row.investedValue, 0) + cashValue;
   const marketValue = rows.reduce((total, row) => total + row.marketValue, 0) + cashValue;
 
