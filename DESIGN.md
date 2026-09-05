@@ -200,7 +200,7 @@ All spacing derives from 4px.
 
 ### Data Manager
 - **Structure**: separate metadata screen with export, import, and reset actions plus a live status line.
-- **Variants**: export completed, import completed, import failed, reset confirmed.
+- **Variants**: export completed to selected path, export fallback to browser downloads, export canceled, import completed, import failed, reset confirmed.
 - **Spacing**: --space-3 to --space-5.
 - **States**: default, hover, active, focus, hidden file input.
 - **Accessibility**: import uses a labeled file input behind a visible button; reset asks for browser confirmation before replacing data.

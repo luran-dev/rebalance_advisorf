@@ -1,18 +1,13 @@
 import { Download, RotateCcw, Upload } from "lucide-react";
 import { useRef, useState } from "react";
+import { backupFileName, saveBackupJson, type BackupSaveResult } from "../backupDownload";
 import { createPortfolioBackup, parsePortfolioBackup } from "../portfolioBackup";
 import type { PortfolioState } from "../accountState";
 
-const backupFileName = (): string => `rebalance-advisor-backup-${new Date().toISOString().slice(0, 10)}.json`;
-
-const downloadJson = (fileName: string, data: object) => {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = fileName;
-  link.click();
-  URL.revokeObjectURL(url);
+const backupStatusText: Readonly<Record<BackupSaveResult, string>> = {
+  saved: "지정한 위치에 현재 데이터 백업 파일을 저장했습니다.",
+  downloaded: "브라우저 기본 다운로드 위치에 현재 데이터 백업 파일을 만들었습니다.",
+  canceled: "백업 저장을 취소했습니다.",
 };
 
 export function DataManager({
@@ -27,9 +22,13 @@ export function DataManager({
   const [status, setStatus] = useState("백업 파일을 내보내거나 가져올 수 있습니다.");
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const exportBackup = () => {
-    downloadJson(backupFileName(), createPortfolioBackup(portfolio));
-    setStatus("현재 데이터 백업 파일을 만들었습니다.");
+  const exportBackup = async () => {
+    try {
+      const result = await saveBackupJson(backupFileName(), createPortfolioBackup(portfolio));
+      setStatus(backupStatusText[result]);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "백업 파일을 저장하지 못했습니다.");
+    }
   };
 
   const importBackup = async (file: File | undefined) => {
@@ -63,7 +62,7 @@ export function DataManager({
       </div>
       <div className="data-manager-body">
         <div className="data-action-grid">
-          <button className="command command-primary" type="button" onClick={exportBackup}>
+          <button className="command command-primary" type="button" onClick={() => void exportBackup()}>
             <Download size={16} aria-hidden="true" />
             백업 내보내기
           </button>

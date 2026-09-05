@@ -91,10 +91,12 @@ PORT=4180 pnpm app:stop
 ```bash
 pnpm app:start -- --port 4180
 pnpm app:restart -- --port 4180
+pnpm app:stop -- --port 4180
 ./scripts/rebalance-advisor.sh start --port 4180
+./scripts/rebalance-advisor.sh stop --port 4180
 ```
 
-앱이 실행 중이면 `pnpm app:status`가 시작 당시의 포트를 보여줍니다.
+앱이 실행 중이면 `pnpm app:status`가 시작 당시의 포트를 보여줍니다. `stop --port`는 PID 파일이 없어도 해당 포트에서 실행 중인 서버를 종료할 수 있습니다.
 
 호스트를 바꾸려면 `HOST` 환경변수를 사용합니다.
 
@@ -116,6 +118,7 @@ package script 대신 직접 실행할 수도 있습니다.
 ./scripts/rebalance-advisor.sh start
 ./scripts/rebalance-advisor.sh start --port 4180
 ./scripts/rebalance-advisor.sh stop
+./scripts/rebalance-advisor.sh stop --port 4180
 ./scripts/rebalance-advisor.sh restart
 ./scripts/rebalance-advisor.sh status
 ./scripts/rebalance-advisor.sh build
@@ -126,3 +129,11 @@ package script 대신 직접 실행할 수도 있습니다.
 입력한 포트폴리오 데이터는 브라우저 `localStorage`에 저장됩니다. 같은 브라우저와 같은 주소에서 앱을 다시 열면 기존 데이터가 유지됩니다.
 
 브라우저 저장값이 사라질 수 있으므로, 중요한 변경 후에는 앱의 데이터 관리 화면에서 JSON 백업을 내보내 두는 것을 권장합니다.
+
+백업 파일명은 분 단위까지 포함합니다.
+
+```text
+rebalance-advisor-backup-YYYY-MM-DD-HH-MM.json
+```
+
+저장 위치 선택을 지원하는 브라우저에서는 백업 내보내기 시 저장 창에서 경로를 고를 수 있습니다. 지원하지 않는 브라우저에서는 기존처럼 브라우저 기본 다운로드 위치에 저장됩니다.

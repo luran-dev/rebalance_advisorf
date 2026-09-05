@@ -1310,6 +1310,7 @@ select:hover {
 }
 
 .market-chart {
+  position: relative;
   display: grid;
   gap: var(--space-2);
   padding: var(--space-3);
@@ -1318,6 +1319,7 @@ select:hover {
 .market-chart svg {
   inline-size: 100%;
   block-size: auto;
+  touch-action: none;
 }
 
 .market-chart line {
@@ -1327,6 +1329,49 @@ select:hover {
 
 .market-chart circle {
   fill: var(--text-primary);
+}
+
+.chart-hover-marker {
+  pointer-events: none;
+}
+
+.chart-hover-marker line {
+  stroke: var(--text-muted);
+  stroke-width: 1;
+  stroke-dasharray: 5 5;
+}
+
+.chart-hover-marker circle {
+  fill: var(--surface-panel);
+  stroke: var(--accent-orange);
+  stroke-width: 3;
+}
+
+.chart-tooltip {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  gap: 2px;
+  min-inline-size: 116px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-panel) 92%, var(--surface-warm));
+  box-shadow: 0 12px 28px rgba(89, 74, 45, 0.16);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 750;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - var(--space-2)));
+}
+
+.chart-tooltip span {
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.chart-tooltip strong {
+  font-variant-numeric: tabular-nums;
 }
 
 .chart-line {

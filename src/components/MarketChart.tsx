@@ -1,3 +1,6 @@
+import { useState } from "react";
+import type { PointerEvent } from "react";
+import { formatNumber } from "../format";
 import type { MarketHistoryItem } from "../types";
 
 const chartWidth = 720;
@@ -25,6 +28,8 @@ const buildPath = (items: readonly MarketHistoryItem[]): string =>
     .join(" ");
 
 export function MarketChart({ items }: { readonly items: readonly MarketHistoryItem[] }) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
   if (items.length === 0) {
     return <div className="market-chart-empty">차트 데이터 없음</div>;
   }
@@ -36,10 +41,25 @@ export function MarketChart({ items }: { readonly items: readonly MarketHistoryI
   const isGain = lastClose >= firstClose;
   const points = items.map((item, index) => chartPoint(item, index, items));
   const lastPoint = points.at(-1);
+  const hoveredItem = hoveredIndex === null ? undefined : items[hoveredIndex];
+  const hoveredPoint = hoveredIndex === null ? undefined : points[hoveredIndex];
+
+  const updateHoveredPoint = (event: PointerEvent<SVGSVGElement>) => {
+    const box = event.currentTarget.getBoundingClientRect();
+    const relativeX = ((event.clientX - box.left) / box.width) * chartWidth;
+    const xRange = chartWidth - chartPadding * 2;
+    const ratio = Math.min(1, Math.max(0, (relativeX - chartPadding) / xRange));
+    setHoveredIndex(Math.round(ratio * (items.length - 1)));
+  };
 
   return (
     <div className="market-chart" role="img" aria-label="선택한 기간의 종가 흐름">
-      <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} focusable="false">
+      <svg
+        viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+        focusable="false"
+        onPointerMove={updateHoveredPoint}
+        onPointerLeave={() => setHoveredIndex(null)}
+      >
         <line x1={chartPadding} y1={chartPadding} x2={chartPadding} y2={chartHeight - chartPadding} />
         <line
           x1={chartPadding}
@@ -48,8 +68,27 @@ export function MarketChart({ items }: { readonly items: readonly MarketHistoryI
           y2={chartHeight - chartPadding}
         />
         <path className={isGain ? "chart-line gain-line" : "chart-line loss-line"} d={buildPath(items)} />
+        {hoveredPoint && hoveredItem ? (
+          <g className="chart-hover-marker">
+            <line x1={hoveredPoint.x} y1={chartPadding} x2={hoveredPoint.x} y2={chartHeight - chartPadding} />
+            <line x1={chartPadding} y1={hoveredPoint.y} x2={chartWidth - chartPadding} y2={hoveredPoint.y} />
+            <circle cx={hoveredPoint.x} cy={hoveredPoint.y} r="5" />
+          </g>
+        ) : null}
         {lastPoint ? <circle cx={lastPoint.x} cy={lastPoint.y} r="5" /> : null}
       </svg>
+      {hoveredPoint && hoveredItem ? (
+        <div
+          className="chart-tooltip"
+          style={{
+            insetInlineStart: `${(hoveredPoint.x / chartWidth) * 100}%`,
+            insetBlockStart: `${(hoveredPoint.y / chartHeight) * 100}%`,
+          }}
+        >
+          <span>{hoveredItem.date}</span>
+          <strong>{formatNumber(hoveredItem.close)}</strong>
+        </div>
+      ) : null}
       <div className="chart-foot">
         <span>{first?.date ?? "-"}</span>
         <strong>{last?.date ?? "-"}</strong>
