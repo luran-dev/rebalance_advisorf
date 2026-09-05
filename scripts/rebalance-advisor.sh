@@ -8,12 +8,17 @@ LOG_FILE="$RUN_DIR/rebalance-advisor.log"
 HOST_FILE="$RUN_DIR/rebalance-advisor.host"
 PORT_FILE="$RUN_DIR/rebalance-advisor.port"
 HOST="${HOST:-127.0.0.1}"
+PORT_WAS_PROVIDED=false
+if [[ -n "${PORT:-}" ]]; then
+  PORT_WAS_PROVIDED=true
+fi
 PORT="${PORT:-4173}"
 
 usage() {
   printf 'Usage: %s {start|stop|restart|status|build} [--host HOST] [--port PORT]\n' "$0"
   printf 'Examples:\n'
   printf '  %s start --port 4180\n' "$0"
+  printf '  %s stop --port 4180\n' "$0"
   printf '  PORT=4180 %s start\n' "$0"
 }
 
@@ -118,9 +123,24 @@ child.unref();
 }
 
 stop_app() {
+  if [[ "$PORT_WAS_PROVIDED" == "true" ]]; then
+    validate_port
+  fi
+
   local pid
   pid="$(current_pid)"
   if ! is_running "$pid"; then
+    if [[ "$PORT_WAS_PROVIDED" == "true" ]]; then
+      pid="$(listening_pid)"
+      if is_running "$pid"; then
+        kill "$pid"
+        rm -f "$PID_FILE"
+        rm -f "$HOST_FILE" "$PORT_FILE"
+        printf 'Stopped Rebalance Advisor on port %s (pid %s).\n' "$PORT" "$pid"
+        return
+      fi
+    fi
+
     rm -f "$PID_FILE"
     rm -f "$HOST_FILE" "$PORT_FILE"
     printf 'Rebalance Advisor is not running.\n'
@@ -174,6 +194,7 @@ while [[ $# -gt 0 ]]; do
         exit 2
       fi
       PORT="$2"
+      PORT_WAS_PROVIDED=true
       shift 2
       ;;
     --help|-h)
