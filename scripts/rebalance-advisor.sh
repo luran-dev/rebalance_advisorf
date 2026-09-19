@@ -7,7 +7,7 @@ PID_FILE="$RUN_DIR/rebalance-advisor.pid"
 LOG_FILE="$RUN_DIR/rebalance-advisor.log"
 HOST_FILE="$RUN_DIR/rebalance-advisor.host"
 PORT_FILE="$RUN_DIR/rebalance-advisor.port"
-HOST="${HOST:-127.0.0.1}"
+HOST="${HOST:-0.0.0.0}"
 PORT_WAS_PROVIDED=false
 if [[ -n "${PORT:-}" ]]; then
   PORT_WAS_PROVIDED=true

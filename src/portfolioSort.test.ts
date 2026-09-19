@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { nextSortDirection, nextSortState, sortByNumber } from "./portfolioSort";
+import { nextSortDirection, nextSortState, sortByNumber, sortByText } from "./portfolioSort";
 
 describe("portfolio sorting", () => {
   it("sorts rows by a numeric weight in the selected direction", () => {
@@ -18,6 +18,21 @@ describe("portfolio sorting", () => {
       "bonds",
       "nasdaq",
       "cash",
+    ]);
+  });
+
+  it("sorts rows by Korean text in the selected direction", () => {
+    const rows = [{ name: "현금" }, { name: "나스닥100" }, { name: "S&P 500" }] as const;
+
+    expect(sortByText(rows, (row) => row.name, "asc").map((row) => row.name)).toEqual([
+      "나스닥100",
+      "현금",
+      "S&P 500",
+    ]);
+    expect(sortByText(rows, (row) => row.name, "desc").map((row) => row.name)).toEqual([
+      "S&P 500",
+      "현금",
+      "나스닥100",
     ]);
   });
 

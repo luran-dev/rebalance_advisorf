@@ -16,6 +16,17 @@ export const sortByNumber = <T>(
     direction === "desc" ? valueOf(right) - valueOf(left) : valueOf(left) - valueOf(right),
   );
 
+export const sortByText = <T>(
+  rows: readonly T[],
+  valueOf: (row: T) => string,
+  direction: SortDirection,
+): readonly T[] =>
+  [...rows].sort((left, right) =>
+    direction === "desc"
+      ? valueOf(right).localeCompare(valueOf(left), "ko-KR")
+      : valueOf(left).localeCompare(valueOf(right), "ko-KR"),
+  );
+
 export const nextSortState = <Key extends string>(
   current: SortState<Key>,
   key: Key,

@@ -1,7 +1,7 @@
 import { Plus, RefreshCw, TableProperties } from "lucide-react";
 import { useState } from "react";
 import type { HoldingSelection, HoldingUpdate } from "../holdingState";
-import { nextSortState, sortByNumber, type SortState } from "../portfolioSort";
+import { nextSortState, sortByNumber, sortByText, type SortState } from "../portfolioSort";
 import type {
   Account,
   AccountId,
@@ -18,9 +18,14 @@ import { HoldingDialog, type HoldingDialogState } from "./HoldingDialog";
 import { HoldingTableRow } from "./HoldingTableRow";
 import { SortHeaderButton } from "./SortHeaderButton";
 
-type HoldingSortKey = "currentPercent" | "targetPercent" | "investedValue" | "marketValue" | "returnPercent" | "profit";
-
-const holdingSortValue = (row: HoldingRow, key: HoldingSortKey): number => row[key];
+type HoldingSortKey =
+  | "productName"
+  | "currentPercent"
+  | "targetPercent"
+  | "investedValue"
+  | "marketValue"
+  | "returnPercent"
+  | "profit";
 const ariaSort = (sortState: SortState<HoldingSortKey>, key: HoldingSortKey): "ascending" | "descending" | "none" => {
   if (sortState.key !== key) {
     return "none";
@@ -73,7 +78,24 @@ export function HoldingsTable({
     direction: "desc",
   });
   const canAddInCurrentView = activeAccount !== "all";
-  const sortedRows = sortByNumber(rows, (row) => holdingSortValue(row, sortState.key), sortState.direction);
+  const sortedRows = (() => {
+    switch (sortState.key) {
+      case "productName":
+        return sortByText(rows, (row) => row.productName, sortState.direction);
+      case "currentPercent":
+        return sortByNumber(rows, (row) => row.currentPercent, sortState.direction);
+      case "targetPercent":
+        return sortByNumber(rows, (row) => row.targetPercent, sortState.direction);
+      case "investedValue":
+        return sortByNumber(rows, (row) => row.investedValue, sortState.direction);
+      case "marketValue":
+        return sortByNumber(rows, (row) => row.marketValue, sortState.direction);
+      case "returnPercent":
+        return sortByNumber(rows, (row) => row.returnPercent, sortState.direction);
+      case "profit":
+        return sortByNumber(rows, (row) => row.profit, sortState.direction);
+    }
+  })();
   const toggleSort = (key: HoldingSortKey) => setSortState((current) => nextSortState(current, key));
 
   return (
@@ -129,7 +151,14 @@ export function HoldingsTable({
           <thead>
             <tr>
               <th scope="col">계좌</th>
-              <th scope="col">종목명</th>
+              <th aria-sort={ariaSort(sortState, "productName")} scope="col">
+                <SortHeaderButton
+                  label="종목명"
+                  direction={sortState.direction}
+                  isActive={sortState.key === "productName"}
+                  onToggle={() => toggleSort("productName")}
+                />
+              </th>
               <th scope="col">코드</th>
               <th scope="col">통화</th>
               <th scope="col">현재가</th>
