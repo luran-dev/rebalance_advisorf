@@ -11,6 +11,7 @@
   --border-strong: #BDB7AA;
   --accent-orange: #FF9416;
   --accent-orange-dark: #B95E00;
+  --accent-orange-strong: #8C4700;
   --signal-buy: #F85EAA;
   --signal-sell: #2296C7;
   --signal-good: #29835A;
@@ -218,6 +219,183 @@ select:focus-visible {
   margin-inline-start: 0;
 }
 
+.session-control {
+  display: grid;
+  gap: var(--space-3);
+  margin-block-start: auto;
+  padding-block-start: var(--space-4);
+  border-block-start: 1px solid var(--border-default);
+}
+
+.session-copy {
+  display: grid;
+  gap: var(--space-1);
+  min-inline-size: 0;
+}
+
+.session-copy strong {
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.save-status {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.save-status.error {
+  color: var(--signal-sell);
+}
+
+.logout-button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  inline-size: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background: var(--surface-panel);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 800;
+  transition: background-color 120ms ease-out, border-color 120ms ease-out, transform 120ms ease-out;
+}
+
+.logout-button:hover {
+  border-color: var(--accent-orange);
+  background: var(--surface-warm);
+  color: var(--accent-orange-dark);
+}
+
+.logout-button:active {
+  transform: translateY(1px);
+}
+
+.side-nav.collapsed .session-copy,
+.side-nav.collapsed .logout-button .nav-item-label {
+  display: none;
+}
+
+.side-nav.collapsed .logout-button {
+  justify-content: center;
+  padding-inline: var(--space-2);
+}
+
+.auth-page {
+  display: grid;
+  min-block-size: 100dvb;
+  place-items: center;
+  padding: var(--space-4);
+  background: var(--surface-app);
+}
+
+.auth-panel {
+  inline-size: min(420px, 100%);
+  padding: var(--space-8);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background: var(--surface-panel);
+  box-shadow: 0 12px 32px rgba(89, 74, 45, 0.1);
+}
+
+.auth-brand {
+  margin-block-end: var(--space-4);
+}
+
+.auth-panel h1 {
+  margin: var(--space-1) 0 var(--space-6);
+  font-size: 26px;
+  line-height: 1.2;
+}
+
+.auth-mode {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-block-end: var(--space-5);
+  padding: var(--space-1);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background: var(--surface-subtle);
+}
+
+.auth-mode button {
+  min-block-size: 40px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 800;
+}
+
+.auth-mode button.active {
+  background: var(--surface-panel);
+  color: var(--accent-orange-dark);
+  box-shadow: inset 0 0 0 1px var(--accent-orange);
+}
+
+.auth-form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.auth-form label {
+  display: grid;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.auth-form input {
+  inline-size: 100%;
+  min-block-size: 44px;
+  padding-inline: var(--space-3);
+  text-align: start;
+}
+
+.auth-submit {
+  inline-size: 100%;
+  margin-block-start: var(--space-2);
+}
+
+.auth-message,
+.auth-loading {
+  margin: var(--space-4) 0 0;
+  min-block-size: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.auth-message {
+  color: var(--text-secondary);
+}
+
+.auth-description {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.auth-link {
+  display: block;
+  margin: var(--space-3) auto 0;
+  padding: var(--space-2);
+  border: 0;
+  background: transparent;
+  color: var(--accent-orange-dark);
+  font-size: 13px;
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .main-content {
   min-inline-size: 0;
   min-block-size: 0;
@@ -241,6 +419,35 @@ select:focus-visible {
   font-weight: 750;
   line-height: 1.15;
   letter-spacing: 0;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.topbar-logout {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  inline-size: 36px;
+  block-size: 36px;
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background: var(--surface-panel);
+  color: var(--text-secondary);
+  transition: background-color 120ms ease-out, border-color 120ms ease-out, color 120ms ease-out, transform 120ms ease-out;
+}
+
+.topbar-logout:hover {
+  border-color: var(--accent-orange);
+  background: var(--surface-warm);
+  color: var(--accent-orange-dark);
+}
+
+.topbar-logout:active {
+  transform: translateY(1px);
 }
 
 .summary-chip {
@@ -1035,14 +1242,14 @@ select:hover {
 }
 
 .command-primary {
-  border-color: var(--accent-orange);
-  background: var(--accent-orange);
+  border-color: var(--accent-orange-dark);
+  background: var(--accent-orange-dark);
   color: var(--surface-panel);
 }
 
 .command-primary:hover {
-  border-color: var(--accent-orange-dark);
-  background: var(--accent-orange-dark);
+  border-color: var(--accent-orange-strong);
+  background: var(--accent-orange-strong);
 }
 
 .command-ghost {
@@ -1622,6 +1829,29 @@ select:hover {
     margin-inline-start: auto;
   }
 
+  .side-nav.collapsed .session-copy,
+  .side-nav.collapsed .logout-button .nav-item-label {
+    display: grid;
+  }
+
+  .session-control {
+    display: flex;
+    align-items: center;
+    margin-block-start: 0;
+    padding-block-start: 0;
+    border-block-start: 0;
+  }
+
+  .session-copy {
+    flex: 1;
+  }
+
+  .logout-button,
+  .side-nav.collapsed .logout-button {
+    inline-size: auto;
+    padding-inline: var(--space-3);
+  }
+
   .sidebar-toggle {
     display: none;
   }
@@ -1702,15 +1932,19 @@ select:hover {
   }
 
   .topbar {
-    display: grid;
+    align-items: start;
   }
 
-  .summary-chip {
-    justify-self: start;
+  .topbar-actions {
+    flex: 0 0 auto;
   }
 
   .topbar h1 {
     font-size: 26px;
+  }
+
+  .auth-panel {
+    padding: var(--space-6);
   }
 
   .metric strong {

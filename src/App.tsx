@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   addAccount,
   deleteAccount,
@@ -11,6 +11,7 @@ import { buildAccountSnapshot, summarizeAssets, summarizeRisks } from "./calcula
 import { AccountManager } from "./components/AccountManager";
 import { AllocationDonut } from "./components/AllocationDonut";
 import { AppShellNav, type AppView, type PortfolioView } from "./components/AppShellNav";
+import { AppTopbar } from "./components/AppTopbar";
 import { HoldingsTable } from "./components/HoldingsTable";
 import { InstrumentManager } from "./components/InstrumentManager";
 import { MarketDetailDialog } from "./components/MarketDetailDialog";
@@ -24,33 +25,29 @@ import { addHolding, deleteHolding, updateHolding, type HoldingSelection, type H
 import { addInstrument, deleteInstrument, updatePortfolioInstrument } from "./instrumentState";
 import { resolveInstrumentRisk } from "./instrumentRisk";
 import { enrichMarketDetailSubject } from "./marketDetailSubject";
-import { clearPortfolioState, loadPortfolioState, savePortfolioState } from "./portfolioBackup";
 import { addTargetAllocation, deleteTargetAllocation, updateTargetAllocation } from "./targetAllocationState";
 import { usePortfolioRefresh } from "./usePortfolioRefresh";
+import { usePortfolioState } from "./usePortfolioState";
 import type { AccountDraft, AccountId, HoldingKey, Instrument, InstrumentDraft, MarketDetailSubject, SymbolCode, TargetAllocationDraft, TargetAllocationKey } from "./types";
 
-export function App() {
+export function App({
+  initialPortfolio,
+  userEmail,
+  onLogout,
+}: {
+  readonly initialPortfolio: PortfolioState;
+  readonly userEmail: string;
+  readonly onLogout: () => Promise<void>;
+}) {
   const [activeView, setActiveView] = useState<AppView>("all");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [portfolio, setPortfolio] = useState<PortfolioState>(() => {
-    try {
-      return loadPortfolioState() ?? portfolioSeed;
-    } catch (error) {
-      if (error instanceof Error) {
-        return portfolioSeed;
-      }
-      throw error;
-    }
-  });
+  const { portfolio, setPortfolio, saveStatus, saveNow } = usePortfolioState(initialPortfolio);
   const [allocationPanelPercent, setAllocationPanelPercent] = useState(38);
   const [marketDetailSubject, setMarketDetailSubject] = useState<MarketDetailSubject | null>(null);
   const { exchangeRates, priceRefresh, fxRefresh, refreshVisibleHoldingPrices, refreshExchangeRates } =
     usePortfolioRefresh({ portfolio, setPortfolio });
   const activeAccount: PortfolioView =
     activeView === "accounts" || activeView === "instruments" || activeView === "data" ? "all" : activeView;
-  useEffect(() => {
-    savePortfolioState(portfolio);
-  }, [portfolio]);
   const snapshot = useMemo(
     () =>
       buildAccountSnapshot(
@@ -119,7 +116,6 @@ export function App() {
     setMarketDetailSubject(null);
   };
   const resetPortfolio = () => {
-    clearPortfolioState();
     setPortfolio(portfolioSeed);
     setMarketDetailSubject(null);
   };
@@ -127,6 +123,11 @@ export function App() {
     setMarketDetailSubject(enrichMarketDetailSubject(subject, snapshot.rows));
   };
   const updateCashPosition = (update: CashPositionUpdate) => setPortfolio((current) => setCashPosition(current, update));
+  const logoutAfterSave = async () => {
+    if (await saveNow()) {
+      await onLogout();
+    }
+  };
 
   return (
     <div className={isSidebarCollapsed ? "app-shell sidebar-collapsed" : "app-shell"}>
@@ -134,19 +135,21 @@ export function App() {
         accounts={portfolio.accounts}
         activeView={activeView}
         isCollapsed={isSidebarCollapsed}
+        onLogout={logoutAfterSave}
         onToggleCollapsed={() => setIsSidebarCollapsed((current) => !current)}
         onViewChange={setActiveView}
+        saveStatus={saveStatus}
+        userEmail={userEmail}
       />
       <main className="main-content">
         {activeView === "accounts" ? (
           <section className="metadata-view" aria-label="계좌 메타 정보">
-            <header className="topbar">
-              <div>
-                <p className="eyebrow">Portfolio metadata</p>
-                <h1>계좌 관리</h1>
-              </div>
-              <div className="summary-chip">{portfolio.accounts.length}개 계좌</div>
-            </header>
+            <AppTopbar
+              eyebrow="Portfolio metadata"
+              title="계좌 관리"
+              summary={`${portfolio.accounts.length}개 계좌`}
+              onLogout={logoutAfterSave}
+            />
             <AccountManager
               accounts={portfolio.accounts}
               activeAccount={activeAccount}
@@ -157,13 +160,12 @@ export function App() {
           </section>
         ) : activeView === "instruments" ? (
           <section className="metadata-view" aria-label="종목 메타 정보">
-            <header className="topbar">
-              <div>
-                <p className="eyebrow">Portfolio metadata</p>
-                <h1>종목 관리</h1>
-              </div>
-              <div className="summary-chip">{portfolio.instruments.length}개 종목</div>
-            </header>
+            <AppTopbar
+              eyebrow="Portfolio metadata"
+              title="종목 관리"
+              summary={`${portfolio.instruments.length}개 종목`}
+              onLogout={logoutAfterSave}
+            />
             <InstrumentManager
               instruments={portfolio.instruments}
               onAddInstrument={addManagedInstrument}
@@ -173,24 +175,22 @@ export function App() {
           </section>
         ) : activeView === "data" ? (
           <section className="metadata-view" aria-label="데이터 백업과 복구">
-            <header className="topbar">
-              <div>
-                <p className="eyebrow">Portfolio data</p>
-                <h1>데이터 관리</h1>
-              </div>
-              <div className="summary-chip">{portfolio.holdings.length}개 보유 항목</div>
-            </header>
+            <AppTopbar
+              eyebrow="Portfolio data"
+              title="데이터 관리"
+              summary={`${portfolio.holdings.length}개 보유 항목`}
+              onLogout={logoutAfterSave}
+            />
             <DataManager portfolio={portfolio} onRestore={restorePortfolio} onReset={resetPortfolio} />
           </section>
         ) : (
           <>
-            <header className="topbar">
-              <div>
-                <p className="eyebrow">Google Sheets workflow migration</p>
-                <h1>{selectedName} 리밸런싱</h1>
-              </div>
-              <div className="summary-chip">{driftCount}개 조정 필요</div>
-            </header>
+            <AppTopbar
+              eyebrow="Google Sheets workflow migration"
+              title={`${selectedName} 리밸런싱`}
+              summary={`${driftCount}개 조정 필요`}
+              onLogout={logoutAfterSave}
+            />
             <section className="metric-grid" aria-label="포트폴리오 핵심 지표">
               <MetricTile label="매입 금액" value={formatKrw(snapshot.investedValue)} />
               <MetricTile label="평가 금액" value={formatKrw(snapshot.marketValue)} />

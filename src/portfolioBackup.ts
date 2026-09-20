@@ -25,7 +25,7 @@ export type PortfolioBackup = {
   readonly portfolio: PortfolioState;
 };
 
-class PortfolioBackupError extends Error {
+export class PortfolioBackupError extends Error {
   constructor(message: string) {
     super(message);
     this.name = "PortfolioBackupError";
@@ -223,15 +223,11 @@ export const parsePortfolioBackup = (raw: string): PortfolioState => {
   return { accounts, instruments, targets, holdings, cashPositions };
 };
 
-export const savePortfolioState = (portfolio: PortfolioState) => {
-  window.localStorage.setItem(storageKey, JSON.stringify(createPortfolioBackup(portfolio)));
-};
-
-export const loadPortfolioState = (): PortfolioState | null => {
+export const loadLegacyPortfolioState = (): PortfolioState | null => {
   const raw = window.localStorage.getItem(storageKey);
   return raw === null ? null : parsePortfolioBackup(raw);
 };
 
-export const clearPortfolioState = () => {
+export const clearLegacyPortfolioState = () => {
   window.localStorage.removeItem(storageKey);
 };

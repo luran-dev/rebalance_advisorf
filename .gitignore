@@ -1,0 +1,4 @@
+.data/
+.omo/evidence/
+.env*
+!.env.example

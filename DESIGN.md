@@ -207,6 +207,24 @@ All spacing derives from 4px.
 - **Motion**: 120ms button feedback only.
 - **Layout**: standalone metadata panel; actions use an intrinsic grid and never appear inside the portfolio dashboard panels.
 
+### Authentication Gateway
+- **Structure**: centered product identity, login/sign-up segmented control, email and password fields, primary submit command, live error status.
+- **Variants**: loading, login, sign-up, submitting, validation error, server error.
+- **Spacing**: --space-3 to --space-8.
+- **States**: default, hover, focus, active, disabled, error.
+- **Accessibility**: semantic form, visible labels, browser autocomplete, live status, and a heading that names the current mode.
+- **Motion**: 120ms control feedback only.
+- **Layout**: one bounded authentication panel on the app surface; compact widths keep a 16px viewport gutter.
+
+### User Session Control
+- **Structure**: signed-in email, database save status, logout icon and label.
+- **Variants**: saved, saving, save failed, expanded sidebar, collapsed sidebar, mobile navigation.
+- **Spacing**: --space-2 to --space-4.
+- **States**: default, hover, focus, active, save error.
+- **Accessibility**: email remains available as text or title, save state uses text, and logout keeps an explicit accessible name.
+- **Motion**: 120ms command feedback only.
+- **Layout**: anchored at the bottom of the desktop sidebar and rendered as a compact row on mobile.
+
 ## 6. Motion & Interaction
 
 ### Timing
@@ -239,6 +257,7 @@ Mixed: panels use subtle shadows plus crisp borders; dense tables use borders an
 - Full keyboard reachability for navigation, table fields, and actions.
 - Korean labels must not clip at compact widths.
 - Buy/sell state must be represented by visible words as well as color.
+- Authentication errors and portfolio save failures must be announced with text, never color alone.
 
 ### Accepted Debt
 

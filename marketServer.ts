@@ -162,14 +162,17 @@ const handleNews = async (requestUrl: string | undefined, response: MarketRespon
 const handleDomesticMarket = async (response: MarketResponseWriter, symbol: string, startDate: Date, endDate: Date) => {
   const marketUrl = `https://m.stock.naver.com/front-api/external/chart/domestic/info?symbol=${symbol}&requestType=1&startTime=${yyyymmdd(startDate)}&endTime=${yyyymmdd(endDate)}&timeframe=day`;
   const text = await fetchText(marketUrl);
-  const items = [...text.matchAll(/\["(?<date>\d{8})",\s*(?<open>[\d.]+),\s*(?<high>[\d.]+),\s*(?<low>[\d.]+),\s*(?<close>[\d.]+),\s*(?<volume>[\d.]+)/g)].map((match) => ({
-    date: `${match.groups?.date.slice(0, 4)}-${match.groups?.date.slice(4, 6)}-${match.groups?.date.slice(6, 8)}`,
-    open: Number(match.groups?.open),
-    high: Number(match.groups?.high),
-    low: Number(match.groups?.low),
-    close: Number(match.groups?.close),
-    volume: Number(match.groups?.volume),
-  }));
+  const items = [...text.matchAll(/\["(?<date>\d{8})",\s*(?<open>[\d.]+),\s*(?<high>[\d.]+),\s*(?<low>[\d.]+),\s*(?<close>[\d.]+),\s*(?<volume>[\d.]+)/g)].map((match) => {
+    const date = match.groups?.["date"] ?? "";
+    return {
+      date: `${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6, 8)}`,
+      open: Number(match.groups?.["open"]),
+      high: Number(match.groups?.["high"]),
+      low: Number(match.groups?.["low"]),
+      close: Number(match.groups?.["close"]),
+      volume: Number(match.groups?.["volume"]),
+    };
+  });
   sendJson(response, 200, { source: "NAVER Finance", currency: "KRW", code: symbol, items });
 };
 

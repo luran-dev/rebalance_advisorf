@@ -1,4 +1,5 @@
-import { BarChart3, Boxes, CircleDollarSign, DatabaseBackup, PanelLeftClose, PanelLeftOpen, Settings } from "lucide-react";
+import { BarChart3, Boxes, CircleDollarSign, DatabaseBackup, LogOut, PanelLeftClose, PanelLeftOpen, Settings } from "lucide-react";
+import type { SaveStatus } from "../usePortfolioState";
 import type { Account, AccountId } from "../types";
 
 export type PortfolioView = AccountId | "all";
@@ -8,12 +9,18 @@ export function AppShellNav({
   accounts,
   activeView,
   isCollapsed,
+  userEmail,
+  saveStatus,
+  onLogout,
   onToggleCollapsed,
   onViewChange,
 }: {
   readonly accounts: readonly Account[];
   readonly activeView: AppView;
   readonly isCollapsed: boolean;
+  readonly userEmail: string;
+  readonly saveStatus: SaveStatus;
+  readonly onLogout: () => Promise<void>;
   readonly onToggleCollapsed: () => void;
   readonly onViewChange: (view: AppView) => void;
 }) {
@@ -101,6 +108,18 @@ export function AppShellNav({
           <span className="nav-item-label">데이터 관리</span>
         </button>
       </nav>
+      <div className="session-control">
+        <div className="session-copy">
+          <strong title={userEmail}>{userEmail}</strong>
+          <span className={saveStatus === "error" ? "save-status error" : "save-status"} aria-live="polite">
+            {saveStatus === "saved" ? "DB 저장 완료" : saveStatus === "saving" ? "DB 저장 중" : "DB 저장 실패"}
+          </span>
+        </div>
+        <button aria-label="로그아웃" className="logout-button" onClick={() => void onLogout()} title="로그아웃" type="button">
+          <LogOut size={18} aria-hidden="true" />
+          <span className="nav-item-label">로그아웃</span>
+        </button>
+      </div>
     </aside>
   );
 }
