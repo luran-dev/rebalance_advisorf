@@ -76,7 +76,7 @@ export function StrategyTable({
         </div>
       </div>
       {!canAddInCurrentView ? <p className="target-hint">계좌별 화면에서 새 목표 비중 항목을 추가할 수 있습니다.</p> : null}
-      <div className="table-scroll">
+      <div className="table-scroll" role="region" aria-label="목표 비중 전체 열" tabIndex={0}>
         <table>
           <caption>계좌별 목표 투자 비중</caption>
           <thead>

@@ -9,10 +9,12 @@ export const usePortfolioState = (initialPortfolio: PortfolioState): {
   readonly portfolio: PortfolioState;
   readonly setPortfolio: Dispatch<SetStateAction<PortfolioState>>;
   readonly saveStatus: SaveStatus;
+  readonly lastSavedAt: Date | null;
   readonly saveNow: () => Promise<boolean>;
 } => {
   const [portfolio, setPortfolio] = useState(initialPortfolio);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("saved");
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const saveQueue = useRef(new PortfolioSaveQueue());
   const latestSave = useRef(0);
 
@@ -23,6 +25,7 @@ export const usePortfolioState = (initialPortfolio: PortfolioState): {
     const request = saveQueue.current.enqueue(() => savePortfolioState(portfolio));
     try {
       await request;
+      setLastSavedAt(new Date());
       if (latestSave.current === saveId) {
         setSaveStatus("saved");
       }
@@ -45,5 +48,5 @@ export const usePortfolioState = (initialPortfolio: PortfolioState): {
     return () => window.clearTimeout(timer);
   }, [saveNow]);
 
-  return { portfolio, setPortfolio, saveStatus, saveNow };
+  return { portfolio, setPortfolio, saveStatus, lastSavedAt, saveNow };
 };

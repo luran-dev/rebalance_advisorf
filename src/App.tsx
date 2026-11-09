@@ -41,8 +41,8 @@ export function App({
 }) {
   const [activeView, setActiveView] = useState<AppView>("all");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const { portfolio, setPortfolio, saveStatus, saveNow } = usePortfolioState(initialPortfolio);
-  const [allocationPanelPercent, setAllocationPanelPercent] = useState(38);
+  const { portfolio, setPortfolio, saveStatus, lastSavedAt, saveNow } = usePortfolioState(initialPortfolio);
+  const [allocationPanelPercent, setAllocationPanelPercent] = useState(24);
   const [marketDetailSubject, setMarketDetailSubject] = useState<MarketDetailSubject | null>(null);
   const { exchangeRates, priceRefresh, fxRefresh, refreshVisibleHoldingPrices, refreshExchangeRates } =
     usePortfolioRefresh({ portfolio, setPortfolio });
@@ -124,8 +124,15 @@ export function App({
   };
   const updateCashPosition = (update: CashPositionUpdate) => setPortfolio((current) => setCashPosition(current, update));
   const logoutAfterSave = async () => {
-    if (await saveNow()) {
+    const saved = await saveNow();
+    if (!saved && !window.confirm("DB 저장에 실패했습니다. 저장되지 않은 변경 사항은 로그아웃하면 사라집니다. 필요하면 취소 후 데이터 관리에서 백업을 내보내세요. 그래도 로그아웃하시겠습니까?")) {
+      return;
+    }
+    try {
       await onLogout();
+    } catch (error) {
+      if (!(error instanceof Error)) throw error;
+      window.alert("서버에 로그아웃을 요청하지 못해 로그아웃하지 못했습니다. 연결 상태를 확인한 뒤 다시 시도해주세요.");
     }
   };
 
@@ -189,6 +196,7 @@ export function App({
               eyebrow="Google Sheets workflow migration"
               title={`${selectedName} 리밸런싱`}
               summary={`${driftCount}개 조정 필요`}
+              lastSavedAt={lastSavedAt}
               onLogout={logoutAfterSave}
             />
             <section className="metric-grid" aria-label="포트폴리오 핵심 지표">

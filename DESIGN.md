@@ -1,5 +1,11 @@
 # Rebalance Advisor Design System
 
+Layout: The holdings table owns horizontal scrolling within the panel. Previous/next column controls and keyboard focus expose all columns at 100% zoom; the rightmost management column stays sticky with opaque row-matched backgrounds. The main content remains the vertical scroll owner.
+
+Holdings column freezing pins the leading columns through the selected boundary in both header and body. Measured column widths determine sticky offsets; keep at least 160px of scrolling content plus the management column available, reducing the applied frozen count with a visible notice on narrow panels. Navigation buttons advance by the unfrozen viewport width.
+
+The analysis split defaults to 24% allocation / 76% targets, with allocation adjustable down to 20% (220px minimum). Allocation chart and legend wrap within their panel. The target table keeps its management column sticky at the right edge and owns horizontal scrolling independently.
+
 ## 0. Research Log
 - Embedded refs: user screenshots of Google Sheets portfolio workflow -> picked `taste-skill` + `layout-skill` because this is an operational finance dashboard with dense tables, editable inputs, and fixed summaries.
 - Lazyweb: skipped because the user's spreadsheet screenshots provide the product reference and workflow.

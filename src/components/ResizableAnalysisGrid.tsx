@@ -16,7 +16,7 @@ export function ResizableAnalysisGrid({
 }: ResizableAnalysisGridProps) {
   const strategyPercent = 100 - allocationPercent;
   const gridStyle: CSSProperties = {
-    gridTemplateColumns: `minmax(280px, ${allocationPercent}fr) minmax(460px, ${strategyPercent}fr)`,
+    gridTemplateColumns: `minmax(220px, ${allocationPercent}fr) minmax(0, ${strategyPercent}fr)`,
   };
 
   return (
@@ -26,7 +26,7 @@ export function ResizableAnalysisGrid({
         <span>종합 포트폴리오</span>
         <input
           type="range"
-          min={28}
+          min={20}
           max={56}
           step={1}
           value={allocationPercent}

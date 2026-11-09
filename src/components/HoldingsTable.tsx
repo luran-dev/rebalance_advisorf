@@ -1,5 +1,6 @@
 import { Plus, RefreshCw, TableProperties } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useFrozenColumns } from "../useFrozenColumns";
 import type { HoldingSelection, HoldingUpdate } from "../holdingState";
 import { nextSortState, sortByNumber, sortByText, type SortState } from "../portfolioSort";
 import type {
@@ -72,6 +73,17 @@ export function HoldingsTable({
   readonly onUpdateCashPosition: (update: CashPosition) => void;
   readonly onOpenMarketDetail: (subject: MarketDetailSubject) => void;
 }) {
+  const tableScroll = useRef<HTMLDivElement>(null);
+  const [frozenCount, setFrozenCount] = useState(0);
+  const frozenOffsets = useFrozenColumns(tableScroll, frozenCount);
+  const scrollColumns = (direction: number) => {
+    const container = tableScroll.current;
+    if (container !== null) {
+      const frozenWidth = Number.parseFloat(container.style.getPropertyValue("--frozen-width")) || 0;
+      const managementWidth = container.querySelector("thead th:last-child")?.getBoundingClientRect().width ?? 0;
+      container.scrollBy({ left: direction * Math.max(100, container.clientWidth - frozenWidth - managementWidth) * 0.75 });
+    }
+  };
   const [dialogState, setDialogState] = useState<HoldingDialogState | null>(null);
   const [sortState, setSortState] = useState<SortState<HoldingSortKey>>({
     key: "currentPercent",
@@ -145,7 +157,25 @@ export function HoldingsTable({
         exchangeRates={exchangeRates}
         onUpdateCashPosition={onUpdateCashPosition}
       />
-      <div className="table-scroll">
+      <div className="holdings-scroll-controls">
+        <span>좌우로 이동하면 모든 열을 볼 수 있습니다. 관리 버튼은 오른쪽에 고정됩니다.</span>
+        <label className="frozen-column-control">
+          열 고정
+          <select aria-label="보유 목록 고정할 마지막 열" value={frozenCount} onChange={(event) => setFrozenCount(Number(event.currentTarget.value))}>
+            <option value={0}>고정 안 함</option>
+            {["계좌", "종목명", "코드", "통화", "현재가", "보유 수량", "평균 매입가", "매입 금액", "평가 금액", "손익", "수익률", "현재 비율", "목표 비율", "매매 가이드", "분석 소견"].map((label, index) => (
+              <option key={label} value={index + 1}>{label}까지 고정</option>
+            ))}
+          </select>
+        </label>
+        <span role="status">{frozenCount > frozenOffsets.length ? `화면 폭에 맞춰 앞 ${frozenOffsets.length}개 열을 고정했습니다.` : frozenCount > 0 ? `앞 ${frozenOffsets.length}개 열 고정` : ""}</span>
+        <div>
+          <button className="command" type="button" onClick={() => scrollColumns(-1)} aria-label="보유 목록 왼쪽 열 보기">← 이전 열</button>
+          <button className="command" type="button" onClick={() => scrollColumns(1)} aria-label="보유 목록 오른쪽 열 보기">다음 열 →</button>
+        </div>
+      </div>
+      <div className="table-scroll" ref={tableScroll} role="region" aria-label="보유 목록 전체 열" tabIndex={0}>
+        <style>{frozenOffsets.map((left, index) => `.holdings-panel :is(th, td):nth-child(${index + 1}) { position: sticky; inset-inline-start: ${left}px; z-index: 2; background: var(--frozen-cell-bg, var(--surface-panel)); box-shadow: 1px 0 var(--border-default); }`).join("\n")}</style>
         <table>
           <caption>현재 보유 종목과 리밸런싱 계산 결과</caption>
           <thead>
