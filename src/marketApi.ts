@@ -50,11 +50,19 @@ const parseMarketItem = (item: MarketItem): MarketHistoryItem | null => {
   };
 };
 
-const latestPriceItem = (items: readonly MarketItem[] | undefined): MarketItem | null =>
-  items?.filter((item) => Number.isFinite(Number(item.close))).at(-1) ?? null;
+const latestPriceItem = (items: readonly MarketItem[] | undefined): { date: string; close: number } | null => {
+  let latest: { date: string; close: number } | null = null;
+  for (const item of items ?? []) {
+    const price = Number(item.close);
+    if (typeof item.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(item.date) ||
+        !Number.isFinite(Date.parse(item.date)) || !Number.isFinite(price) || price <= 0) continue;
+    if (latest === null || item.date > latest.date) latest = { date: item.date, close: price };
+  }
+  return latest;
+};
 
 export const fetchMarketHistory = async (symbol: SymbolCode, range: MarketRange): Promise<MarketHistory> => {
-  const response = await fetch(`/api/market?code=${encodeURIComponent(symbol)}&range=${range}`);
+  const response = await fetch(`/api/market?code=${encodeURIComponent(symbol)}&range=${range}`, { cache: "no-store" });
   if (!response.ok) {
     throw new Error("시세를 찾을 수 없습니다.");
   }
@@ -75,7 +83,7 @@ export const fetchMarketHistory = async (symbol: SymbolCode, range: MarketRange)
 };
 
 export const fetchMarketQuote = async (symbol: SymbolCode): Promise<MarketQuote> => {
-  const response = await fetch(`/api/market?code=${encodeURIComponent(symbol)}&range=6m`);
+  const response = await fetch(`/api/market?code=${encodeURIComponent(symbol)}&range=1w`, { cache: "no-store" });
   if (!response.ok) {
     throw new Error("시세를 찾을 수 없습니다.");
   }
@@ -83,18 +91,15 @@ export const fetchMarketQuote = async (symbol: SymbolCode): Promise<MarketQuote>
   const data: MarketResponse = await response.json();
   const latest = latestPriceItem(data.items);
   const currency = isCurrency(data.currency) ? data.currency : /^\d{6}$/.test(symbol) ? "KRW" : "USD";
-  const price = Number(latest?.close);
-  const updatedAt = typeof latest?.date === "string" ? latest.date : new Date().toISOString().slice(0, 10);
-
-  if (!Number.isFinite(price)) {
+  if (latest === null) {
     throw new Error("시세 응답이 비어 있습니다.");
   }
 
   return {
     symbol: typeof data.code === "string" ? data.code : symbol.toUpperCase(),
-    price,
+    price: latest.close,
     currency,
-    updatedAt,
+    updatedAt: latest.date,
     source: typeof data.source === "string" ? data.source : "외부 시세",
   };
 };
